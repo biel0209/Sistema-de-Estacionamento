@@ -26,7 +26,7 @@ void imprimirFila(NoFuncionario *filaFunc);
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
     char *nome, int id, int idade)
 {
-    NoFuncionario *novo, *aux = malloc(sizeof(NoFuncionario));
+    NoFuncionario *aux, *novo = malloc(sizeof(NoFuncionario));
     if (novo){
         strcpy(novo->nome, nome);
         novo->id = id;
@@ -36,8 +36,10 @@ void cadastrarFuncionarios(NoFuncionario **filaFunc,
             *filaFunc = novo;
         }else{
             aux = *filaFunc;
-            while(aux->prox)
+            while(aux->prox){
                 aux = aux->prox;
+            }
+            aux->prox = novo;
         }
     }else{
         printf("Memoria indisponivel\n");
