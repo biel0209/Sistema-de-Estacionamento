@@ -1,5 +1,6 @@
 #ifndef BIBLIOTECASW_H
 #define BIBLIOTECASW_H
+#include <string.h>
 
 typedef struct noFuncionario{
     char nome[50];
@@ -14,44 +15,44 @@ typedef struct noCarro{
 }NoCarro;
 
 
-void cadastrarFuncionarios(NoFuncionario *headFila, 
-    NoFuncionario *tailFila, char *nome, int id, int idade);
-void imprimirFila(NoFuncionario *headFila);
+void cadastrarFuncionarios(NoFuncionario **filaFunc, 
+    char *nome, int id, int idade);
+void imprimirFila(NoFuncionario *filaFunc);
 
 
 #endif
 
 
-void cadastrarFuncionarios(NoFuncionario *headFila, 
-    NoFuncionario *tailFila, char *nome, int id, int idade)
+void cadastrarFuncionarios(NoFuncionario **filaFunc, 
+    char *nome, int id, int idade)
 {
-    NoFuncionario *novo = malloc(sizeof(NoFuncionario));
-    if (novo != NULL){
+    NoFuncionario *novo, *aux = malloc(sizeof(NoFuncionario));
+    if (novo){
         strcpy(novo->nome, nome);
         novo->id = id;
         novo->idade = idade;
         novo->prox = NULL;
-
-        if (headFila == NULL){
-            headFila = novo;
+        if (*filaFunc == NULL){
+            *filaFunc = novo;
         }else{
-            tailFila->prox = novo;
+            aux = *filaFunc;
+            while(aux->prox)
+                aux = aux->prox;
         }
-        tailFila = novo;
     }else{
         printf("Memoria indisponivel\n");
     }
 }
 
-void imprimirFila(NoFuncionario *headFila)
+void imprimirFila(NoFuncionario *filaFunc)
 {
-    if (headFila == NULL){
+    if (filaFunc == NULL){
         printf("A fila esta vazia\n");
     }else{
         printf("----------FILA FUNCIONARIOS---------\n");
-        while(headFila != NULL){
-            printf("Funcionario %d: Nome: %s\tIdade: %d\n", headFila->id, headFila->nome ,headFila->idade);
-            headFila = headFila->prox;
+        while(filaFunc){
+            printf("Funcionario %d: Nome: %s\tIdade: %d\n", filaFunc->id, filaFunc->nome ,filaFunc->idade);
+            filaFunc = filaFunc->prox;
         }
     }
 }
