@@ -1,6 +1,7 @@
 #ifndef BIBLIOTECASW_H
 #define BIBLIOTECASW_H
 #include <string.h>
+#include <stdio.h>
 
 typedef struct noFuncionario{
     char nome[50];
@@ -16,15 +17,16 @@ typedef struct noCarro{
 
 
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
-    char *nome, int id, int idade);
+    char *nome, int id, int idade, FILE *arquivo);
 void imprimirFila(NoFuncionario *filaFunc);
 
 
 #endif
 
 
+
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
-    char *nome, int id, int idade)
+    char *nome, int id, int idade, FILE *arquivo)
 {
     NoFuncionario *aux, *novo = malloc(sizeof(NoFuncionario));
     if (novo){
@@ -41,6 +43,8 @@ void cadastrarFuncionarios(NoFuncionario **filaFunc,
             }
             aux->prox = novo;
         }
+        //gravando no arquivo
+        fprintf(arquivo, "Funcionario de nome %s (ID = %d; Idade = %d) cadastrado\n", novo->nome, novo->id, novo->idade);
     }else{
         printf("Memoria indisponivel\n");
     }
