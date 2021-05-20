@@ -12,8 +12,7 @@ typedef struct noFuncionario{
 }NoFuncionario;
 
 typedef struct noCarro{
-    char id;
-    char placa[6];
+    char placa;
     struct noCarro *prox;
 }NoCarro;
 
@@ -26,19 +25,21 @@ void imprimirFila(NoFuncionario *filaFunc);
 
 #endif
 
-void empilharCarro(NoCarro *topo, char id, char *placa)
+NoCarro* empilharCarro(NoCarro *topo, char id, int totalCarros, FILE *arquivo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
-    novo->id = id;
-    strcpy(novo->placa, placa);
+    novo->placa = id;
     novo->prox = topo;
+
+    fprintf(arquivo, "Carro %c entrou. Total = %d\n",id,totalCarros);
+    return novo;
 }
 
 void imprimirPilha(NoCarro *topo)
 {
     printf("\n-------- PILHA CARROS --------\n");     
     while(topo){   //enquanto topo for true, ou seja, enquanto nao for false/null
-        printf("ID: %c\tPlaca: %s\n",topo->id, topo->placa);
+        printf("Carro %c\n",topo->placa);
         topo = topo->prox; //interação
     }
     printf("\n-------- FIM PILHA --------\n");

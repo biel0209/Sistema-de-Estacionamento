@@ -8,42 +8,10 @@
 //
 
 //TODO: NUMERO DE FUNCIONARIOS: 3         NUMERO TOTAL DE CARROS: 9
-
-int verificarRepetidas(char placas[][6], int qtdPlacas, char *aux_placa)
-{   
-    for(int j=0; j<qtdPlacas; j++){
-        if ( strcmp(placas[j], aux_placa) == 0) 
-            return 1;
-    }
-    return 0;
-}
-
-void gerarPlacas(char placas[][6], int qtdPlacas)
-{
-    srand(time(NULL));
-    
-    for(int j=0; j<9; j++){
-        strcpy(placas[j], "------");
-    }
-    char aux_placa[6];
-    char possiveisCaracteres[10] = {'0','1','2','3','4','5','6','7','8','9'};
-    for(int i=0; i<9; i++){
-        do{
-            for(int j=0; j<6; j++){
-                aux_placa[j] = possiveisCaracteres[rand()%10];
-            }
-        }while( verificarRepetidas(placas, qtdPlacas, aux_placa) == 1 );
-        strcpy(placas[i], aux_placa);
-        
-    }
-}
-
-
+//TODO: a lista de carros, no dia 2, deverá ser duplamente encadeada
 
 int main()
 {
-    char texto_Arquivo[100][100];
-    
     //Criando ponteiro para arquivo
     FILE *arquivo;      // criando a variável ponteiro para o arquivo
     arquivo = fopen("log.txt", "a");   //abrindo o arquivo
@@ -70,37 +38,33 @@ int main()
 
     //Colocar carros no estacionamento
     
-
+    fprintf(arquivo, "Ordenação usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
-    fprintf(arquivo, "Estacionamento vazio!\n");
+    if (topo == NULL)
+        fprintf(arquivo, "Estacionamento vazio!\n");
+
+    //Colocando carros na pilha
+    for (int i=0; i<tamEstacionamento; i++){
+        char id = (char)((int)'A' + i); 
+        topo = empilharCarro(topo,id,i+1,arquivo);  
+    }
+
+    //imprimirPilha(topo);
 
     fclose(arquivo); //fechar arquivo
 
-    char placas[tamEstacionamento][6];
-    gerarPlacas(placas, tamEstacionamento);
-    for (int i=0; i<tamEstacionamento; i++){
-        char id = (char)((int)'A' + i); 
-        empilharCarro(topo,id,placas[i]);
-    }
-
-    imprimirPilha(topo);
-
-    
-
-
-    //Procedimento pra imprimir as informacoes contidas no arquivo log
+    //leitura do conteudo de log.txt e impressao no output
+    int c;
     FILE *arquivoLeitura;
     arquivoLeitura = fopen("log.txt", "r");
- 
-    for(int i=0; i<100; i++){                                         //laço referente a quantidade de linhas
-        while( fgets(texto_Arquivo[i], 100, arquivoLeitura) != NULL ) //laço pra imprimir cada string, ou seja, cada linha
-            printf("%s", texto_Arquivo[i]);
-    }
-
+    while ((c = getc(arquivoLeitura)) != EOF)
+        putchar(c);
+    fclose(arquivoLeitura);
+    
 
     //imprimirFila(filaFunc); //imprimir fila de funcionarios
-
+    
 
     
     return 0;
