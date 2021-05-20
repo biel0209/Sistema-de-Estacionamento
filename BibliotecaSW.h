@@ -16,7 +16,7 @@ typedef struct noCarro{
     char placa[6];
     struct noCarro *prox;
 }NoCarro;
-//
+
 
 
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
