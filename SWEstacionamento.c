@@ -6,6 +6,7 @@
 #define qtdFuncionarios 3
 #define tamEstacionamento 9
 
+
 //TODO: NUMERO DE FUNCIONARIOS: 3         NUMERO TOTAL DE CARROS: 9
 
 int verificarRepetidas(char placas[][6], int qtdPlacas, char *aux_placa)
