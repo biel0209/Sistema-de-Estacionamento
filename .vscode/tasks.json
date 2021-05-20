@@ -3,7 +3,11 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe arquivo de build ativo",
+<<<<<<< HEAD
             "command": "C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\gcc.exe",
+=======
+            "command": "C:\\MinGW\\bin\\gcc.exe",
+>>>>>>> 0c867b8f6e463c70c867caa1f063d15100e6a913
             "args": [
                 "-g",
                 "${file}",

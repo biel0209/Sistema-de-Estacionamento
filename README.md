@@ -48,6 +48,7 @@ quando um carro sai do estacionamento em definitivo, seguindo o exemplo de log a
 
 Funcionário de nome X1 (ID = 1; Idade = 34) cadastrado;
 Funcionário de nome X2 (ID = 2; Idade = 57) cadastrado;
+Ordenação usada: ID;
 Abertura do estacionamento (lotação máxima = 3).
 Estacionamento vazio!
 Carro A entrou. Total = 1;
@@ -57,14 +58,14 @@ Estacionamento lotado!
 Carro B deverá sair (estadia = 150 reais).
 ----- Carro C retirado pelo funcionário X1;
 ----- Carro B retirado pelo funcionário X2;
------ Carro C voltou.
+----- Carro C voltou pelo funcionário X1.
 Carro B saiu! Total = 2;
 Carro C deverá sair (estadia = 170 reais).
------ Carro C retirado pelo funcionário X1;
+----- Carro C retirado pelo funcionário X2;
 Carro C saiu! Total = 1;
 Valor do portão obtido! Nenhum carro pode entrar!
 Carro A deverá sair (estadia = 220 reais).
------ Carro A retirado pelo funcionário X2;
+----- Carro A retirado pelo funcionário X1;
 Carro A saiu! Total = 0;
 Fechamento do estacionamento.
 
