@@ -2,6 +2,7 @@
 #define BIBLIOTECASW_H
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct noFuncionario{
     char nome[50];
@@ -11,6 +12,7 @@ typedef struct noFuncionario{
 }NoFuncionario;
 
 typedef struct noCarro{
+    char id;
     char placa[6];
     struct noCarro *prox;
 }NoCarro;
@@ -23,7 +25,23 @@ void imprimirFila(NoFuncionario *filaFunc);
 
 #endif
 
+void empilharCarro(NoCarro *topo, char id, char *placa)
+{
+    NoCarro *novo = malloc(sizeof(NoCarro));
+    novo->id = id;
+    strcpy(novo->placa, placa);
+    novo->prox = topo;
+}
 
+void imprimirPilha(NoCarro *topo)
+{
+    printf("\n-------- PILHA CARROS --------\n");     
+    while(topo){   //enquanto topo for true, ou seja, enquanto nao for false/null
+        printf("ID: %c\tPlaca: %s\n",topo->id, topo->placa);
+        topo = topo->prox; //interação
+    }
+    printf("\n-------- FIM PILHA --------\n");
+}
 
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
     char *nome, int id, int idade, FILE *arquivo)
