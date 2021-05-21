@@ -80,7 +80,5 @@ int main()
 
     //imprimirFila(filaFunc); //imprimir fila de funcionarios
     
-
-    
     return 0;
 }
