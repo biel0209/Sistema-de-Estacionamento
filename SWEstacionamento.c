@@ -38,7 +38,7 @@ int main()
 
     //Colocar carros no estacionamento
     
-    fprintf(arquivo, "Ordenação usada: ID;\n");
+    fprintf(arquivo, "Ordenacao usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
     if (topo == NULL)
