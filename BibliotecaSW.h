@@ -46,14 +46,22 @@ NoCarro* empilharCarro(NoCarro *topo, char id, int custo, int totalCarros, FILE 
     return novo;
 }
 
-NoCarro* desempilharCarro(NoCarro *topo, char resposta)
+NoCarro* empilharCarro2(NoCarro *topo, char id, int custo)
 {
-    NoCarro* rua = NULL;
-    NoCarro* aux = topo;
+    NoCarro *novo = malloc(sizeof(NoCarro));
+    novo->placa = id;
+    novo->prox = topo;
+    novo->valor = custo;
 
-    NoCarro *remover = topo;
-    topo = remover->prox;
-    
+    return novo;
+}
+
+NoCarro* desempilharCarro(NoCarro **topo)
+{
+    NoCarro *remover = *topo;
+    *topo = remover->prox;
+
+    return remover;   
 }
 
 void imprimirPilha(NoCarro *topo)

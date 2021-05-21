@@ -23,6 +23,8 @@ int main()
     }
     //Fim da criacao do ponteiro para arquivo
 
+
+    NoCarro *rua = NULL;
     NoCarro *topo = NULL;  //estrutura do estacionamento (pilha)
     NoFuncionario *filaFunc = NULL; //estrutura dos funcionarios (fila)
 
@@ -52,18 +54,41 @@ int main()
         int custo = gerarValores();
         topo = empilharCarro(topo,id,custo,i+1,arquivo);
     }
+
+    // Mostra os carros empilhados
+    imprimirPilha(topo);
+
     char resposta;
-    printf("Deseja retirar qual carro?");
-    scanf("%c",&resposta);
-    desempilharCarro();
-    
-    while(topo->placa != resposta){
-        rua = empilharCarroRua(rua, topo->placa, topo->valor);
-        topo = topo->prox;
+    printf("Deseja retirar qual carro?\n");
+    scanf("%s", resposta);
+
+    NoCarro* tempAux;
+
+    int cont = 0;
+
+    for (int i = 0; i < tamEstacionamento; i++) {
+        
+        // desempilha os carros
+        tempAux = desempilharCarro(&topo);
+ 
+
+        // empilha os carros na rua
+        if (tempAux->placa != resposta) {
+            rua = empilharCarroRua(rua, tempAux->placa, tempAux->valor);
+            cont++;
+        } else {
+            printf("Carro retirado");
+            break;
+        }
     }
-    // 
-    // gera os valores do custo da estadia.
-    
+
+    for (int i = 0; i < cont; i++) {
+
+        tempAux = desempilharCarro(&rua);
+
+        topo = empilharCarro2(topo, tempAux->placa,
+            tempAux->valor);
+    }
 
     imprimirPilha(topo);
 
