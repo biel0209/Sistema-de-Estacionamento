@@ -3,8 +3,8 @@
 #include <string.h>
 #include "BibliotecaSW.h"
 #include <time.h>
-#define qtdFuncionarios 3
-#define tamEstacionamento 9
+#define qtdFuncionarios 2
+#define tamEstacionamento 4
 //
 
 //TODO: NUMERO DE FUNCIONARIOS: 3         NUMERO TOTAL DE CARROS: 9
@@ -12,6 +12,7 @@
 
 int main()
 {
+    int montanteEstacionamento = 0; // montante do arrecadado no estacionamento.
     //Criando ponteiro para arquivo
     FILE *arquivo;      // criando a variável ponteiro para o arquivo
     arquivo = fopen("log.txt", "a");   //abrindo o arquivo
@@ -45,23 +46,37 @@ int main()
         fprintf(arquivo, "Estacionamento vazio!\n");
 
     //Colocando carros na pilha
+    srand(time(NULL));
     for (int i=0; i<tamEstacionamento; i++){
         char id = (char)((int)'A' + i); 
-        topo = empilharCarro(topo,id,i+1,arquivo);  
+        int custo = gerarValores();
+        topo = empilharCarro(topo,id,custo,i+1,arquivo);
     }
+    char resposta;
+    printf("Deseja retirar qual carro?");
+    scanf("%c",&resposta);
+    desempilharCarro();
+    
+    while(topo->placa != resposta){
+        rua = empilharCarroRua(rua, topo->placa, topo->valor);
+        topo = topo->prox;
+    }
+    // 
+    // gera os valores do custo da estadia.
+    
 
-    //imprimirPilha(topo);
+    imprimirPilha(topo);
 
     fclose(arquivo); //fechar arquivo
 
-    //leitura do conteudo de log.txt e impressao no output
+    /*leitura do conteudo de log.txt e impressao no output
     int c;
     FILE *arquivoLeitura;
     arquivoLeitura = fopen("log.txt", "r");
     while ((c = getc(arquivoLeitura)) != EOF)
         putchar(c);
     fclose(arquivoLeitura);
-    
+    */
 
     //imprimirFila(filaFunc); //imprimir fila de funcionarios
     
