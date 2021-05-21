@@ -22,7 +22,6 @@ void cadastrarFuncionarios(NoFuncionario **filaFunc,
     char *nome, int id, int idade, FILE *arquivo);
 void imprimirFila(NoFuncionario *filaFunc);
 
-
 #endif
 
 NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo)
