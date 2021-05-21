@@ -58,8 +58,7 @@ int main()
     }
     //Fim do cadastramento
 
-    //Colocar carros no estacionamento
-    
+    // -------------- Colocar carros no estacionamento --------------
     fprintf(arquivo, "Ordenacao usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
@@ -74,10 +73,17 @@ int main()
         topo = empilharCarro(topo,id,custo,i+1,arquivo);
     }
 
+    // -------------- Colocar carros na rua --------------
     char resposta;
     printf("Deseja retirar qual carro?\n");
-    scanf("%s", resposta);
+    scanf("%c\n", &resposta);
 
+    do {
+        resposta = fgetc(stdin);
+    } while (resposta != EOF && resposta != '\n');
+
+    printf("Resposta: ", resposta);
+    
     NoCarro* tempAux;
 
     int cont = 0;
