@@ -42,7 +42,6 @@ int main()
     }
     //Fim da criacao do ponteiro para arquivo
 
-
     NoCarro *rua = NULL;
     NoCarro *topo = NULL;  //estrutura do estacionamento (pilha)
     NoFuncionario *filaFunc = NULL; //estrutura dos funcionarios (fila)
@@ -58,8 +57,7 @@ int main()
     }
     //Fim do cadastramento
 
-    //Colocar carros no estacionamento
-    
+    // ------ Colocar carros no estacionamento ------
     fprintf(arquivo, "Ordenacao usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
@@ -74,6 +72,7 @@ int main()
         topo = empilharCarro(topo,id,custo,i+1,arquivo);
     }
 
+    // ------ Colocar carros na rua ------
     char resposta;
     printf("Deseja retirar qual carro?\n");
     scanf("%s", resposta);
