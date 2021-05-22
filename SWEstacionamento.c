@@ -58,11 +58,7 @@ int main()
     }
     //Fim do cadastramento
 
-<<<<<<< HEAD
-    // ------ Colocar carros no estacionamento ------
-=======
     // -------------- Colocar carros no estacionamento --------------
->>>>>>> 0da5767e50baf82c7d22ffe6e54fe07c4ea2417c
     fprintf(arquivo, "Ordenacao usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
@@ -78,19 +74,10 @@ int main()
         topo = empilharCarro(topo,i+1,custo,i+1,arquivo);
     }
 
-<<<<<<< HEAD
-    // ------ Colocar carros na rua ------
-    char resposta;
-=======
     // -------------- Colocar carros na rua --------------
     int resposta;
->>>>>>> 0da5767e50baf82c7d22ffe6e54fe07c4ea2417c
     printf("Deseja retirar qual carro?\n");
     scanf("%d", &resposta);
-
-    flush_in();
-
-    printf("Resposta: ", resposta);
     
     NoCarro* tempAux;
 
@@ -135,13 +122,6 @@ int main()
     //imprimirFila(filaFunc); //imprimir fila de funcionarios
     
     return 0;
-}
-
-void flush_in()
-{
-   int resposta;
-
-   while( (resposta = fgetc(stdin)) != EOF && resposta != '\n' ){}
 }
 
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
