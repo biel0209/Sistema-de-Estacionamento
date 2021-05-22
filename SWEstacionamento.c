@@ -13,14 +13,14 @@ typedef struct noFuncionario{
 }NoFuncionario;
 
 typedef struct noCarro{
-    char placa;
+    int placa;
     int valor; // valor multiplicado pelo tempo. (12 reais/hora)
     struct noCarro *prox;
 }NoCarro;
 
-NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo);
-NoCarro* empilharCarro(NoCarro *topo, char id, int custo, int totalCarros, FILE *arquivo);
-NoCarro* empilharCarro2(NoCarro *topo, char id, int custo);
+NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo);
+NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo);
+NoCarro* empilharCarro2(NoCarro *topo, int id, int custo);
 NoCarro* desempilharCarro(NoCarro **topo);
 void imprimirPilha(NoCarro *topo);
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
@@ -28,6 +28,7 @@ void cadastrarFuncionarios(NoFuncionario **filaFunc,
 void imprimirFila(NoFuncionario *filaFunc);
 int gerarHora();
 int gerarValores();
+void flush_in();
 
 int main()
 {
@@ -57,7 +58,11 @@ int main()
     }
     //Fim do cadastramento
 
+<<<<<<< HEAD
     // ------ Colocar carros no estacionamento ------
+=======
+    // -------------- Colocar carros no estacionamento --------------
+>>>>>>> 0da5767e50baf82c7d22ffe6e54fe07c4ea2417c
     fprintf(arquivo, "Ordenacao usada: ID;\n");
     fprintf(arquivo, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
 
@@ -67,16 +72,26 @@ int main()
     //Colocando carros na pilha
     srand(time(NULL));
     for (int i=0; i<tamEstacionamento; i++){
-        char id = (char)((int)'A' + i); 
+
+        // Atrela um ID ao carro 
         int custo = gerarValores();
-        topo = empilharCarro(topo,id,custo,i+1,arquivo);
+        topo = empilharCarro(topo,i+1,custo,i+1,arquivo);
     }
 
+<<<<<<< HEAD
     // ------ Colocar carros na rua ------
     char resposta;
+=======
+    // -------------- Colocar carros na rua --------------
+    int resposta;
+>>>>>>> 0da5767e50baf82c7d22ffe6e54fe07c4ea2417c
     printf("Deseja retirar qual carro?\n");
-    scanf("%s", resposta);
+    scanf("%d", &resposta);
 
+    flush_in();
+
+    printf("Resposta: ", resposta);
+    
     NoCarro* tempAux;
 
     int cont = 0;
@@ -122,7 +137,14 @@ int main()
     return 0;
 }
 
-NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo)
+void flush_in()
+{
+   int resposta;
+
+   while( (resposta = fgetc(stdin)) != EOF && resposta != '\n' ){}
+}
+
+NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
     novo->placa = id;
@@ -132,7 +154,7 @@ NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo)
     return novo;
 }
 
-NoCarro* empilharCarro(NoCarro *topo, char id, int custo, int totalCarros, FILE *arquivo)
+NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
     novo->placa = id;
@@ -143,7 +165,7 @@ NoCarro* empilharCarro(NoCarro *topo, char id, int custo, int totalCarros, FILE 
     return novo;
 }
 
-NoCarro* empilharCarro2(NoCarro *topo, char id, int custo)
+NoCarro* empilharCarro2(NoCarro *topo, int id, int custo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
     novo->placa = id;
@@ -165,7 +187,7 @@ void imprimirPilha(NoCarro *topo)
 {
     printf("\n-------- PILHA CARROS --------\n");     
     while(topo){   //enquanto topo for true, ou seja, enquanto nao for false/null
-        printf("Carro %c\t Custo da estadia: %d\n",topo->placa, topo->valor);
+        printf("Carro %d\t Custo da estadia: %d\n",topo->placa, topo->valor);
         topo = topo->prox; //interação
     }
     printf("\n-------- FIM PILHA --------\n");
