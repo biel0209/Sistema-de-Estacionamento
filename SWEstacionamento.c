@@ -18,17 +18,19 @@ typedef struct noCarro{
     struct noCarro *prox;
 }NoCarro;
 
+//TODO: tratar a estadia. 
+
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo);
 NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo);
 NoCarro* empilharCarro2(NoCarro *topo, int id, int custo);
 NoCarro* desempilharCarro(NoCarro **topo);
+NoFuncionario* removerDaFila(NoFuncionario **fila);
+void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int idade);
 void imprimirPilha(NoCarro *topo);
-void cadastrarFuncionarios(NoFuncionario **filaFunc, 
-    char *nome, int id, int idade, FILE *arquivo);
+void cadastrarFuncionarios(NoFuncionario **filaFunc, char *nome, int id, int idade, FILE *arquivo);
 void imprimirFila(NoFuncionario *filaFunc);
 int gerarHora();
 int gerarValores();
-void flush_in();
 
 int main()
 {
@@ -56,6 +58,8 @@ int main()
         scanf("%d",&idade);
         cadastrarFuncionarios(&filaFunc, nome,(i+1),idade,arquivo);
     }
+
+    imprimirFila(filaFunc);
     //Fim do cadastramento
 
     // -------------- Colocar carros no estacionamento --------------
@@ -83,6 +87,8 @@ int main()
 
     int cont = 0;
 
+    NoFuncionario* funcionarioAtual = removerDaFila(&filaFunc); // funcionario que desempilha o carro.
+
     for (int i = 0; i < tamEstacionamento; i++) {
         
         // desempilha os carros
@@ -93,7 +99,7 @@ int main()
             rua = empilharCarroRua(rua, tempAux->placa, tempAux->valor);
             cont++;
         } else {
-            printf("Carro retirado");
+            printf("Carro retirado pelo funcionario %s.\n", funcionarioAtual->nome);
             break;
         }
     }
@@ -106,7 +112,10 @@ int main()
             tempAux->valor);
     }
 
+    cadastrarFuncionarios2(&filaFunc,funcionarioAtual->nome, funcionarioAtual->id, funcionarioAtual->idade);
+
     imprimirPilha(topo);
+    imprimirFila(filaFunc);
 
     fclose(arquivo); //fechar arquivo
 
@@ -122,6 +131,29 @@ int main()
     //imprimirFila(filaFunc); //imprimir fila de funcionarios
     
     return 0;
+}
+
+void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int idade)
+{
+    NoFuncionario *aux, *novo = malloc(sizeof(NoFuncionario));
+    if (novo){
+        strcpy(novo->nome, nome);
+        novo->id = id;
+        novo->idade = idade;
+        novo->prox = NULL;
+        if (*filaFunc == NULL){
+            *filaFunc = novo;
+        }else{
+            aux = *filaFunc;
+            while(aux->prox){
+                aux = aux->prox;
+            }
+            aux->prox = novo;
+        }
+        //gravando no arquivo
+    }else{
+        printf("Memoria indisponivel\n");
+    }
 }
 
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
@@ -153,6 +185,15 @@ NoCarro* empilharCarro2(NoCarro *topo, int id, int custo)
     novo->valor = custo;
 
     return novo;
+}
+
+NoFuncionario* removerDaFila(NoFuncionario **fila)
+{
+    NoFuncionario *remover = NULL;
+    remover = *fila;
+    *fila = remover->prox;
+
+    return remover;
 }
 
 NoCarro* desempilharCarro(NoCarro **topo)
