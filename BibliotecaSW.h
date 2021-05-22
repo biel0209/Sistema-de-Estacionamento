@@ -133,7 +133,7 @@ void imprimirPilha(NoCarro *topo)
         printf("Carro %d\t Custo da estadia: %d\n",topo->placa, topo->valor);
         topo = topo->prox; //interação
     }
-    printf("\n-------- FIM PILHA --------\n");
+    printf("-------- FIM PILHA --------\n\n");
 }
 
 void cadastrarFuncionarios(NoFuncionario **filaFunc, 
@@ -166,7 +166,7 @@ void imprimirFila(NoFuncionario *filaFunc)
     if (filaFunc == NULL){
         printf("A fila esta vazia\n");
     }else{
-        printf("----------FILA FUNCIONARIOS---------\n");
+        printf("\n----------FILA FUNCIONARIOS---------\n");
         while(filaFunc){
             printf("Funcionario %d: Nome: %s\tIdade: %d\n", filaFunc->id, filaFunc->nome ,filaFunc->idade);
             filaFunc = filaFunc->prox;

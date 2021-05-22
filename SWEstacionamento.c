@@ -19,7 +19,7 @@ void removerCarro()
 {
     // -------------- Colocar carros na rua --------------
     int resposta;
-    printf("Deseja retirar qual carro?\n");
+    printf("Deseja retirar qual carro?: ");
     scanf("%d", &resposta);
     int estadia = checarValorEstadia(topo,resposta);
     fprintf(arquivo, "Carro %d devera sair (Estadia = %d)\n", resposta, estadia);
@@ -126,7 +126,7 @@ int main()
             imprimirPilha(topo);
         }
         else{
-            printf("Tecle 1 para adicionar e 2 para retirar um carro\n");
+            printf("Tecle 1 para adicionar e 2 para retirar um carro: ");
             int op;
             scanf("%d",&op);
             if (op == 1){
