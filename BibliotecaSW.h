@@ -18,13 +18,44 @@ typedef struct noCarro{
     struct noCarro *prox;
 }NoCarro;
 
-void cadastrarFuncionarios(NoFuncionario **filaFunc, 
-    char *nome, int id, int idade, FILE *arquivo);
+NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo);
+NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo);
+NoCarro* empilharCarro2(NoCarro *topo, int id, int custo);
+NoCarro* desempilharCarro(NoCarro **topo);
+NoFuncionario* removerDaFila(NoFuncionario **fila);
+void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int idade);
+void imprimirPilha(NoCarro *topo);
+void cadastrarFuncionarios(NoFuncionario **filaFunc, char *nome, int id, int idade, FILE *arquivo);
 void imprimirFila(NoFuncionario *filaFunc);
+int gerarHora();
+int gerarValores();
 
 #endif
 
-NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo)
+void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int idade)
+{
+    NoFuncionario *aux, *novo = malloc(sizeof(NoFuncionario));
+    if (novo){
+        strcpy(novo->nome, nome);
+        novo->id = id;
+        novo->idade = idade;
+        novo->prox = NULL;
+        if (*filaFunc == NULL){
+            *filaFunc = novo;
+        }else{
+            aux = *filaFunc;
+            while(aux->prox){
+                aux = aux->prox;
+            }
+            aux->prox = novo;
+        }
+        //gravando no arquivo
+    }else{
+        printf("Memoria indisponivel\n");
+    }
+}
+
+NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
     novo->placa = id;
@@ -34,32 +65,72 @@ NoCarro* empilharCarroRua(NoCarro *topo, char id, int custo)
     return novo;
 }
 
-NoCarro* empilharCarro(NoCarro *topo, char id, int custo, int totalCarros, FILE *arquivo)
+NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
     novo->placa = id;
     novo->prox = topo;
     novo->valor = custo;
 
-    fprintf(arquivo, "Carro %c entrou. Total = %d\n",id,totalCarros);
+    fprintf(arquivo, "Carro %d entrou. Total = %d\n",id,totalCarros);
     return novo;
 }
 
-NoCarro* desempilharCarro(NoCarro *topo, char resposta)
-{
-    NoCarro* rua = NULL;
-    NoCarro* aux = topo;
+int gerarID(NoCarro *topo, int tamEstacionamento){
+    for (int i=tamEstacionamento; i>1; i--)
+        while(topo){
+            if (topo->placa == i)
+                break;
+            else{
+                topo = topo->prox;
+            }
+            return i;
+        }
+}
 
-    NoCarro *remover = topo;
-    topo = remover->prox;
-    
+NoCarro* empilharCarro2(NoCarro *topo, int id, int custo)
+{
+    NoCarro *novo = malloc(sizeof(NoCarro));
+    novo->placa = id;
+    novo->prox = topo;
+    novo->valor = custo;
+
+    return novo;
+}
+
+int checarValorEstadia(NoCarro *topo, int placa)
+{
+    while(topo){
+        if (topo->placa == placa){
+            return topo->valor;
+        }else{
+            topo = topo->prox;
+        }
+    }
+}
+
+NoFuncionario* removerDaFila(NoFuncionario **fila)
+{
+    NoFuncionario *remover = NULL;
+    remover = *fila;
+    *fila = remover->prox;
+
+    return remover;
+}
+
+NoCarro* desempilharCarro(NoCarro **topo)
+{
+    NoCarro *remover = *topo;
+    *topo = remover->prox;
+
+    return remover;   
 }
 
 void imprimirPilha(NoCarro *topo)
 {
     printf("\n-------- PILHA CARROS --------\n");     
     while(topo){   //enquanto topo for true, ou seja, enquanto nao for false/null
-        printf("Carro %c\t Custo da estadia: %d\n",topo->placa, topo->valor);
+        printf("Carro %d\t Custo da estadia: %d\n",topo->placa, topo->valor);
         topo = topo->prox; //interação
     }
     printf("\n-------- FIM PILHA --------\n");
@@ -101,6 +172,16 @@ void imprimirFila(NoFuncionario *filaFunc)
             filaFunc = filaFunc->prox;
         }
     }
+}
+
+int checarQtdCarros(NoCarro *topo)
+{
+    int cont=0;
+    while(topo){
+        cont++;
+        topo = topo->prox;
+    }
+    return cont;
 }
 
 int gerarHora()
