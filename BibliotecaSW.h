@@ -29,6 +29,9 @@ void cadastrarFuncionarios(NoFuncionario **filaFunc, char *nome, int id, int ida
 void imprimirFila(NoFuncionario *filaFunc);
 int gerarHora();
 int gerarValores();
+void ordenarFuncionariosNome(NoFuncionario *filaFunc);
+void ordenarFuncionariosIdade(NoFuncionario *filaFunc);
+void ordenarFuncionariosID(NoFuncionario *filaFunc);
 
 #endif
 
@@ -55,6 +58,90 @@ void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int ida
     }
 }
 
+void ordenarFuncionariosNome(NoFuncionario *filaFunc) 
+{
+    NoFuncionario *pi; //referencia do primeiro da fila
+    NoFuncionario *pj; //referencia do nó que varrerá a fila
+    NoFuncionario *pfim = NULL; //referencia do ultimo da fila
+
+    for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
+        for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
+            if ( strcmp(pj->nome, pj->prox->nome) > 0 ){
+                int auxNome[50];
+                strcpy(auxNome, pj->nome);
+                int auxId = pj->id;
+                int auxIdade = pj->idade;
+
+                strcpy(pj->nome, pj->prox->nome);
+                pj->id = pj->prox->id;
+                pj->idade = pj->prox->idade;
+
+                strcpy(pj->prox->nome, auxNome);
+                pj->prox->id = auxId;
+                pj->prox->idade = auxIdade; 
+            }
+        }
+        pfim = pj;
+    }
+}
+
+void ordenarFuncionariosIdade(NoFuncionario *filaFunc) 
+{
+    NoFuncionario *pi; //referencia do primeiro da fila
+    NoFuncionario *pj; //referencia do nó que varrerá a fila
+    NoFuncionario *pfim = NULL; //referencia do ultimo da fila
+
+    for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
+        for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
+            if (pj->idade > pj->prox->idade){
+                int auxNome[50];
+                strcpy(auxNome, pj->nome);
+                int auxId = pj->id;
+                int auxIdade = pj->idade;
+
+                strcpy(pj->nome, pj->prox->nome);
+                pj->id = pj->prox->id;
+                pj->idade = pj->prox->idade;
+
+                strcpy(pj->prox->nome, auxNome);
+                pj->prox->id = auxId;
+                pj->prox->idade = auxIdade; 
+            }
+        }
+        pfim = pj;
+    }
+}
+
+void ordenarFuncionariosID(NoFuncionario *filaFunc) 
+{
+    NoFuncionario *pi; //referencia do primeiro da fila
+    NoFuncionario *pj; //referencia do nó que varrerá a fila
+    NoFuncionario *pfim = NULL; //referencia do ultimo da fila
+
+    for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
+        for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
+            if (pj->id > pj->prox->id){
+                int auxNome[50];
+                strcpy(auxNome, pj->nome);
+                int auxId = pj->id;
+                int auxIdade = pj->idade;
+
+                strcpy(pj->nome, pj->prox->nome);
+                pj->id = pj->prox->id;
+                pj->idade = pj->prox->idade;
+
+                strcpy(pj->prox->nome, auxNome);
+                pj->prox->id = auxId;
+                pj->prox->idade = auxIdade; 
+            }
+        }
+        pfim = pj;
+    }
+}
+
+
+
+
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
 {
     NoCarro *novo = malloc(sizeof(NoCarro));
@@ -74,18 +161,6 @@ NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *
 
     fprintf(arquivo, "Carro %d entrou. Total = %d\n",id,totalCarros);
     return novo;
-}
-
-int gerarID(NoCarro *topo, int tamEstacionamento){
-    for (int i=tamEstacionamento; i>1; i--)
-        while(topo){
-            if (topo->placa == i)
-                break;
-            else{
-                topo = topo->prox;
-            }
-            return i;
-        }
 }
 
 NoCarro* empilharCarro2(NoCarro *topo, int id, int custo)
@@ -187,12 +262,10 @@ int checarQtdCarros(NoCarro *topo)
 int gerarHora()
 {
     int aux;
-
     do
     {
-        aux = rand() % 361;
-    } while (aux == 0);
-
+        aux = rand() % 721; //rand gera um numero entre 0 e 721-1
+    } while (aux < 500 );  //forçar a gerar valores altos de horas
     return aux;
 }
 
@@ -207,6 +280,12 @@ int gerarValores()
     else if(hora > 180 && hora <= 240) custo = 12 * 4;
     else if(hora > 240 && hora <= 300) custo = 12 * 5;
     else if(hora > 300 && hora <= 360) custo = 12 * 6;
+    else if(hora > 360 && hora <= 420) custo = 12 * 7;
+    else if(hora > 420 && hora <= 480) custo = 12 * 8;
+    else if(hora > 480 && hora <= 540) custo = 12 * 9;
+    else if(hora > 540 && hora <= 600) custo = 12 * 10;
+    else if(hora > 600 && hora <= 660) custo = 12 * 11;
+    else if(hora > 660 && hora <= 720) custo = 12 * 12;
   
     return custo;
 }

@@ -6,8 +6,6 @@
 #define qtdFuncionarios 2
 #define tamEstacionamento 4
 
-//TODO: dentro do while referente ao montante do estacionamento, deverá ser criado funcões ao invés de ficar repetindo o codigo
-
 FILE *arquivo;      // criando a variável ponteiro para o arquivo
 int montanteEstacionamento = 0; // montante do arrecadado no estacionamento.
 NoCarro *rua = NULL; //estrutura que vai servir para armazenar os carros temporariamente na rua na hora das manobras
@@ -60,17 +58,11 @@ void removerCarro()
 void adicionarCarro()
 {
     int custo = gerarValores();
-    //int id = gerarID(topo,tamEstacionamento);
     int id;
     printf("Digite a placa do carro: ");
     scanf("%d",&id);
     int totalCarros = checarQtdCarros(topo);
-    topo = empilharCarro(topo,id,custo,totalCarros,arquivo); //gerarId retornará um id que não exista ainda na pilha
-}
-
-void ordenarFuncionarios()
-{
-    //TODO: falta criar essa funcao
+    topo = empilharCarro(topo,id,custo,totalCarros+1,arquivo);
 }
 
 int main()
@@ -115,26 +107,36 @@ int main()
 
     while(montanteEstacionamento < 300){
 
-        if (checarQtdCarros(topo) == tamEstacionamento){
-            printf("Estacionamento lotado! Retire um carro!\n");
-            removerCarro();
-            imprimirPilha(topo);
-        }
-        else if (checarQtdCarros(topo) == 0){
-            printf("Estacionamento vazio! Adicione um carro!\n");
-            adicionarCarro();
-            imprimirPilha(topo);
-        }
-        else{
-            printf("Tecle 1 para adicionar e 2 para retirar um carro: ");
-            int op;
-            scanf("%d",&op);
-            if (op == 1){
+        printf("--------------------------MENU--------------------------\n");
+        printf("1-Adicionar um carro\t2-Remover um carro\t3-Alterar ordem dos funcinoarios\n");
+        int op;
+        scanf("%d",&op);
+        if (op == 1){
+            if (checarQtdCarros(topo) == tamEstacionamento){
+                printf("Erro: o estacionamento esta lotado!\n");
+            }else{
                 adicionarCarro();
+                imprimirPilha(topo);
+            }
+        }else if (op==2){
+            if (checarQtdCarros(topo) == 0){
+                printf("Erro: o estacionamento esta vazio!\n");
             }else{
                 removerCarro();
+                imprimirPilha(topo);
             }
-            imprimirPilha(topo);
+        }else if(op==3){
+            printf("1-Ordenar por ID\t2-Ordenar por nome\t3-Ordenar por idade\n");
+            scanf("%d",&op);
+            if (op==1)
+                ordenarFuncionariosID(filaFunc);
+            else if(op==2)
+                ordenarFuncionariosNome(filaFunc);
+            else if(op==3)
+                ordenarFuncionariosIdade(filaFunc);
+            imprimirFila(filaFunc);
+        }else{
+            printf("Erro: opcao invalida!\n");
         }
     }
 
