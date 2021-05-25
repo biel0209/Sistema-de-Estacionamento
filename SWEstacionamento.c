@@ -6,10 +6,14 @@
 #define qtdFuncionarios 2
 #define tamEstacionamento 4
 
-FILE *arquivo;      // criando a variável ponteiro para o arquivo
+FILE *arquivo;      // criando a variável ponteiro para o arquivo do log do primeiro dia
+FILE *arquivoDia2;      // criando a variável ponteiro para o arquivo do log do segundo dia
 int montanteEstacionamento = 0; // montante do arrecadado no estacionamento.
 NoCarro *rua = NULL; //estrutura que vai servir para armazenar os carros temporariamente na rua na hora das manobras
 NoCarro *topo = NULL;  //estrutura do estacionamento (pilha)
+RegCarro *regCarros = NULL; //estrutura pra registrar a sequencia de acontecimentos. Servira para seguir a mesma rotina no segundo dia
+ListaCarro *listaCarros = NULL; //estrutura dos carros do segundo dia (referencia do começo da lista)
+ListaCarro *listaCarrosFim = NULL; //estrutura dos carros do segundo dia (referencia do final da lista)
 NoFuncionario *filaFunc = NULL; //estrutura dos funcionarios (fila)
 
 
@@ -21,6 +25,9 @@ void removerCarro()
     scanf("%d", &resposta);
     int estadia = checarValorEstadia(topo,resposta);
     fprintf(arquivo, "Carro %d devera sair (Estadia = %d)\n", resposta, estadia);
+
+    insereNaListaReg(&regCarros, resposta, estadia, "devera sair");
+    
 
     montanteEstacionamento += estadia;   //adicionar a estadia do carro no lucro do estacionamento
     
@@ -63,16 +70,31 @@ void adicionarCarro()
     scanf("%d",&id);
     int totalCarros = checarQtdCarros(topo);
     topo = empilharCarro(topo,id,custo,totalCarros+1,arquivo);
+    insereNaListaReg(&regCarros, id, custo, "entrou");
 }
+
+void removerLista(int placa, int estadia)
+{
+    int tamInicio = checarTamInicio(listaCarros, placa,estadia);
+    int tamFim = checarTamFim(listaCarrosFim,placa,estadia);
+   
+    fprintf(arquivoDia2, "Carro %d devera sair\n",placa);
+
+    removerDaListaInicio(&listaCarros,placa, estadia,rua,arquivoDia2);
+    /*
+    if (tamInicio <= tamFim){
+        removerDaListaInicio(&listaCarros,placa, estadia,rua,arquivoDia2);
+    }else{
+        removerDaListaFim(listaCarrosFim,placa, estadia);
+    } */
+
+    fprintf(arquivoDia2, "Carro %d saiu. Total = %d\n",placa,checarQtdCarrosLista(listaCarros));
+}
+
 
 int main()
 {
     arquivo = fopen("log.txt", "a");   //abrindo o arquivo
-    
-    if (arquivo == NULL){    //Testando a abertura do arquivo
-        printf("Erro ao tentar abrir o arquivo!");
-        exit(1);
-    }
 
     //Procedimento pra receber do usuario informacoes sobre o funcionario e cadastra-los
     char nome[50]; int idade;
@@ -97,6 +119,7 @@ int main()
     for (int i=0; i<tamEstacionamento; i++){
         int custo = gerarValores();
         topo = empilharCarro(topo,i+1,custo,i+1,arquivo);
+        insereNaListaReg(&regCarros, i+1, custo, "entrou");
     }
 
     if (checarQtdCarros(topo) == tamEstacionamento) 
@@ -128,12 +151,18 @@ int main()
         }else if(op==3){
             printf("1-Ordenar por ID\t2-Ordenar por nome\t3-Ordenar por idade\n");
             scanf("%d",&op);
-            if (op==1)
+            if (op==1){
                 ordenarFuncionariosID(filaFunc);
-            else if(op==2)
+                fprintf(arquivo, "Ordenacao usada: ID;\n");
+            }
+            else if(op==2){
                 ordenarFuncionariosNome(filaFunc);
-            else if(op==3)
+                fprintf(arquivo, "Ordenacao usada: Nome;\n");
+            }
+            else if(op==3){
                 ordenarFuncionariosIdade(filaFunc);
+                fprintf(arquivo, "Ordenacao usada: Idade;\n");
+            }
             imprimirFila(filaFunc);
         }else{
             printf("Erro: opcao invalida!\n");
@@ -142,8 +171,50 @@ int main()
 
     fprintf(arquivo, "Valor do portão obtido! (Total arrecadado: %d). Nenhum carro pode entrar!\n", montanteEstacionamento);
 
-    //imprimirPilha(topo);
-    //imprimirFila(filaFunc);
+    printf("Valor do portao obtido! Nenhum carro pode entrar!\n");
+
+    while (checarQtdCarros(topo) != 0){
+        removerCarro();
+    }
+
+    fprintf(arquivo, "Fechamento do estacionamento.\n");
+
+    imprimirListaReg(regCarros);
+
+    //######################################  SEGUNDO DIA   #########################################
+    
+    arquivoDia2 = fopen("log2.txt","a");
+
+    //Procedimento pra receber do usuario informacoes sobre o funcionario e cadastra-los
+    NoFuncionario *funcRemovido;
+    for (int i=0; i<qtdFuncionarios; i++){
+        funcRemovido = removerDaFila(&filaFunc);
+        cadastrarFuncionarios(&filaFunc, funcRemovido->nome,funcRemovido->id,funcRemovido->idade,arquivoDia2);
+    }
+    //Fim do cadastramento
+
+    imprimirFila(filaFunc);
+
+    fprintf(arquivoDia2, "Ordenacao usada: ID;\n");   //TODO: QUAL ORDENACAO ESTA SENDO USADA?
+    fprintf(arquivoDia2, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
+    if (topo == NULL)
+        fprintf(arquivoDia2, "Estacionamento vazio!\n");
+
+    
+    while (regCarros){
+        if ( strcmp(regCarros->acao, "entrou") == 0 ){
+            insereNaLista(&listaCarros, &listaCarrosFim, regCarros->placa, regCarros->valor, checarQtdCarrosLista(listaCarros)+1, arquivoDia2);
+        }else if ( strcmp(regCarros->acao, "devera sair") == 0 ){
+            removerLista(regCarros->placa, regCarros->valor);
+        }
+        regCarros = regCarros->prox;
+    }
+
+    imprimirLista(listaCarros);
+  
+    //imprimirLista2(listaCarrosFim); //testar a iteracao atraves do anterior, começando pelo final da lista
+    
+
 
     fclose(arquivo); //fechar arquivo
 
@@ -156,8 +227,6 @@ int main()
     fclose(arquivoLeitura);
     */
 
-    //imprimirFila(filaFunc); //imprimir fila de funcionarios
-    
     return 0;
 }
 

@@ -18,6 +18,20 @@ typedef struct noCarro{
     struct noCarro *prox;
 }NoCarro;
 
+typedef struct regCarro{
+    char placa;
+    int valor; // valor multiplicado pelo tempo. (12 reais/hora)
+    char acao[15]; //acao que foi realizada com um determinado carro ("entrou", "devera sair")
+    struct regCarro *prox;
+}RegCarro;
+
+typedef struct listaCarro{
+    char placa;
+    int valor; // valor multiplicado pelo tempo. (12 reais/hora)
+    struct listaCarro *prox;
+    struct listaCarro *ant;
+}ListaCarro;
+
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo);
 NoCarro* empilharCarro(NoCarro *topo, int id, int custo, int totalCarros, FILE *arquivo);
 NoCarro* empilharCarro2(NoCarro *topo, int id, int custo);
@@ -32,8 +46,214 @@ int gerarValores();
 void ordenarFuncionariosNome(NoFuncionario *filaFunc);
 void ordenarFuncionariosIdade(NoFuncionario *filaFunc);
 void ordenarFuncionariosID(NoFuncionario *filaFunc);
+int checarQtdCarrosLista(ListaCarro *lista);
 
 #endif
+
+void insereNaListaReg(RegCarro **lista, char placa, int custo, char *acao) //insere no fim
+{
+    RegCarro *novo = malloc(sizeof(RegCarro));
+    RegCarro *aux;
+    
+    novo->placa = placa;
+    novo->valor = custo;
+    strcpy(novo->acao, acao);
+    novo->prox = NULL;
+
+    if(*lista == NULL){
+        *lista = novo;
+    }else{
+        aux = *lista;
+        while(aux->prox != NULL){
+            aux = aux->prox;
+        }
+        aux->prox = novo;
+    }
+}
+
+
+void insereNaLista(ListaCarro **lista, ListaCarro **listaFim, char placa, int custo, int totalCarros, FILE *arquivoDia2) //insere no fim
+{
+    ListaCarro *novo = malloc(sizeof(ListaCarro));
+    ListaCarro *aux;
+    
+    novo->placa = placa;
+    novo->valor = custo;
+    novo->prox = NULL;
+    novo->ant = *listaFim;
+
+    if(*lista == NULL){
+        *lista = novo;
+        *listaFim = novo; 
+    }else{
+        aux = *lista;
+        while(aux->prox != NULL){
+            aux = aux->prox;
+        }
+        aux->prox = novo;
+        *listaFim = aux->prox;
+    }
+    fprintf(arquivoDia2, "Carro %d entrou. Total = %d\n", novo->placa, totalCarros);
+}
+
+void insereNaLista2(ListaCarro **lista, char placa, int custo) //insere no fim
+{
+    ListaCarro *novo = malloc(sizeof(ListaCarro));
+    ListaCarro *aux;
+
+    novo->placa = placa;
+    novo->valor = custo;
+    novo->prox = NULL;
+
+    if(*lista == NULL){
+        *lista = novo;
+    }else{
+        aux = *lista;
+        while(aux->prox != NULL){
+            aux = aux->prox;
+        }
+        aux->prox = novo;
+    }
+}
+
+int checarTamInicio(ListaCarro *lista, int placa, int estadia) //verificar quantos carros tem entre o inicio da lista e o carro procurado
+{
+    int cont=0;
+    while(lista && lista->placa != placa && lista->valor != estadia){
+        cont++;
+        lista = lista->prox;
+    }
+    return cont;
+}
+
+int checarTamFim(ListaCarro *listaFim, int placa, int estadia) //verificar quantos carros tem entre o inicio da lista e o carro procurado
+{
+    int cont=0;
+    while(listaFim && listaFim->placa != placa && listaFim->valor != estadia){
+        cont++;
+        listaFim = listaFim->ant;
+    }
+    return cont;
+}
+
+ListaCarro* removerDaLista(ListaCarro **lista)
+{   
+    ListaCarro *remover = NULL;
+    if(*lista){
+        remover = *lista;
+        *lista = remover->prox;
+    }
+    return remover;
+}
+
+void removerDaListaInicio(ListaCarro **lista, int placa, int estadia, NoCarro *rua, FILE *arquivoDia2)
+{   
+    ListaCarro *remover = NULL;
+    ListaCarro *carroRemovido;
+    NoCarro *carroDaRua;
+    ListaCarro *aux;
+
+    if(*lista){
+        if( (*lista)->placa == placa && (*lista)->valor == estadia ){
+            remover = *lista;
+            *lista = remover->prox;
+        }else{
+            aux = *lista;
+            while(aux && aux->placa != placa && aux->valor != estadia){
+                carroRemovido = removerDaLista(&aux);
+                fprintf(arquivoDia2, "Carro %d retirado\n",carroRemovido->placa);
+                rua = empilharCarro2(rua,carroRemovido->placa,carroRemovido->valor);
+                aux = aux->prox;
+            }
+            if (aux){
+                remover = aux;
+                aux = remover->prox;
+            }
+            while(rua){
+                carroDaRua = desempilharCarro(&rua);
+                //int totalCarros = checarQtdCarrosLista(lista);
+                insereNaLista2(lista,carroDaRua->placa,carroDaRua->valor);
+                fprintf(arquivoDia2, "Carro %d voltou\n",carroDaRua->placa);
+            }
+        }
+
+    }
+
+}
+/*
+void removerDaListaInicio(ListaCarro **lista, int placa, int estadia, NoCarro *rua, FILE *arquivoDia2)
+{   
+    ListaCarro *remover = NULL;
+    ListaCarro *carroRemovido;
+    NoCarro *carroDaRua;
+    ListaCarro *aux;
+
+    if(*lista){
+        if( (*lista)->placa == placa && (*lista)->valor == estadia ){
+            remover = *lista;
+            *lista = remover->prox;
+        }else{
+            aux = *lista;
+            while(aux->prox && aux->placa != placa && aux->valor != estadia){
+                carroRemovido = removerDaLista(&aux);
+                fprintf(arquivoDia2, "Carro %d retirado\n",carroRemovido->placa);
+                rua = empilharCarro2(rua,carroRemovido->placa,carroRemovido->valor);
+                aux = aux->prox;
+            }
+            if (aux->prox){
+                remover = aux->prox;
+                aux->prox = remover->prox;
+            }
+            if (rua == NULL)
+                printf("\nrua vazia\n");
+            while(rua){
+                carroDaRua = desempilharCarro(&rua);
+                int totalCarros = checarQtdCarrosLista(lista);
+                insereNaLista2(&lista,carroDaRua->placa,carroDaRua->valor);
+                fprintf(arquivoDia2, "Carro %d voltou",carroDaRua->placa);
+            }
+        }
+
+    }
+
+}*/
+
+void imprimirListaReg(RegCarro *lista)
+{
+    printf("\n------------------------- REGISTRO DO FUNCIONAMENTO DO ESTACIONAMENTO -------------------------\n");
+    while(lista){
+        printf("Carro %d\tAcao: %s\tEstadia: %d\n",lista->placa,lista->acao,lista->valor);
+        lista = lista->prox;
+    }
+}
+
+void imprimirLista(ListaCarro *lista)
+{
+    printf("\n-------------------------LISTA DE CARROS -------------------------\n");
+    while(lista){
+        printf("Carro %d\tEstadia: %d\n",lista->placa,lista->valor);
+        lista = lista->prox;
+    }
+}
+
+void imprimirLista2(ListaCarro *lista)
+{
+    printf("\n-------------------------LISTA DE CARROS INVERSA -------------------------\n");
+    while(lista){
+        printf("Carro %d\tEstadia: %d\n",lista->placa,lista->valor);
+        lista = lista->ant;
+    }
+}
+
+int checarQtdCarrosLista(ListaCarro *lista)
+{
+    int cont=0;
+    while(lista){
+        cont++;
+        lista = lista->prox;
+    }
+    return cont;
+}
 
 void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int idade)
 {
@@ -58,7 +278,7 @@ void cadastrarFuncionarios2(NoFuncionario **filaFunc,char *nome, int id, int ida
     }
 }
 
-void ordenarFuncionariosNome(NoFuncionario *filaFunc) 
+void ordenarFuncionariosNome(NoFuncionario *filaFunc)       //metodo bubblesort
 {
     NoFuncionario *pi; //referencia do primeiro da fila
     NoFuncionario *pj; //referencia do nó que varrerá a fila
@@ -85,7 +305,7 @@ void ordenarFuncionariosNome(NoFuncionario *filaFunc)
     }
 }
 
-void ordenarFuncionariosIdade(NoFuncionario *filaFunc) 
+void ordenarFuncionariosIdade(NoFuncionario *filaFunc)    //metodo bubblesort
 {
     NoFuncionario *pi; //referencia do primeiro da fila
     NoFuncionario *pj; //referencia do nó que varrerá a fila
@@ -112,7 +332,7 @@ void ordenarFuncionariosIdade(NoFuncionario *filaFunc)
     }
 }
 
-void ordenarFuncionariosID(NoFuncionario *filaFunc) 
+void ordenarFuncionariosID(NoFuncionario *filaFunc)     //metodo bubblesort
 {
     NoFuncionario *pi; //referencia do primeiro da fila
     NoFuncionario *pj; //referencia do nó que varrerá a fila
@@ -132,15 +352,12 @@ void ordenarFuncionariosID(NoFuncionario *filaFunc)
 
                 strcpy(pj->prox->nome, auxNome);
                 pj->prox->id = auxId;
-                pj->prox->idade = auxIdade; 
+                pj->prox->idade = auxIdade;
             }
         }
         pfim = pj;
     }
 }
-
-
-
 
 NoCarro* empilharCarroRua(NoCarro *topo, int id, int custo)
 {
@@ -183,6 +400,7 @@ int checarValorEstadia(NoCarro *topo, int placa)
         }
     }
 }
+
 
 NoFuncionario* removerDaFila(NoFuncionario **fila)
 {
