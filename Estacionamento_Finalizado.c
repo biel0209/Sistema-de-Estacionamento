@@ -13,12 +13,30 @@ typedef struct noFuncionario{ // Tipo responsável por definir um funcionário d
 }NoFuncionario;
 
 typedef struct noCarro{ // Tipo responsável por definir um funcionário do estacionamento.
-    char placa;
+    int placa;
     int valor; // Valor final resultante do produto entre tempo de estadia e custo.
     struct noCarro *prox;
 }NoCarro;
 
-FILE *arquivo; 
+typedef struct registroCarros{ // Tipo responsável por gravar as ações para o segundo dia.
+    int placa;
+    int valor; // Valor final resultante do produto entre tempo de estadia e custo.
+    char atividade[15]; // Pode ser -> "entrou" ou "deve sair".
+    struct registroCarros *prox;
+}RegistroCarros;
+
+typedef struct listaCarros{
+    int placa;
+    int valor; // // Valor final resultante do produto entre tempo de estadia e custo.
+    struct listaCarros *prox; // Posterior.
+    struct listaCarros *ant; // Anterior.
+}ListaCarros;
+
+RegistroCarros *carrosSimulacao = NULL; // Estrutura secundária para armazenar dados em um registro, usados na simulação posterior.
+FILE *arquivo; // Log do primeiro dia.
+FILE *arquivoSimulacao; // Log do segundo dia.
+ListaCarros *carrosIni = NULL; // Referencia para o inicio da fila.
+ListaCarros *carrosFim = NULL; // Referencia para o fim da fila.
 NoCarro *topo = NULL; // Estrutura principal do estacionamento de tipo PILHA.
 NoCarro *rua = NULL; // Estrutura auxiliar para guardar os carros durante as manobras de retirada.
 NoFuncionario *filaFuncionarios = NULL; // Estrutura principal dos funcionários de tipo FILA.
@@ -34,12 +52,15 @@ void cadastrarFuncionarios(NoFuncionario **filaFuncionarios, char *nome, int id,
 void cadastrarFuncionariosAUX(NoFuncionario **filaFuncionarios,char *nome, int id, int idade);
 void imprimirFila(NoFuncionario *filaFuncionarios);
 void imprimirPilha(NoCarro *topo);
+void insereLista(ListaCarros **carrosIni, ListaCarros **carrosFim,int quantidadeCarros, int placa, int valor, FILE *arquivoSimulacao);
+void insereRegistro(RegistroCarros **carrosSimulacao, int resposta, int valor, char *atividade);
 void ordenarFuncionariosIdade(NoFuncionario *filaFuncionarios);
 void ordenarFuncionariosID(NoFuncionario *filaFuncionarios);
 void ordenarFuncionariosNome(NoFuncionario *filaFuncionarios);
 void verificarValorEstadia(NoCarro *topo, int placa);
 void removerCarro();
 void removerCarrosFechamento();
+int contarCarros(ListaCarros *carros);
 int gerarHora();
 int gerarValores();
 int verificarQuantidadeCarros(NoCarro *topo);
@@ -96,10 +117,14 @@ void adicionarCarro()
 {
     int custo = gerarValores();
     int id;
+
     printf("Digite a placa do carro: ");
     scanf("%d",&id);
+
     int qtdCarros = verificarQuantidadeCarros(topo);
     topo = empilharCarro(topo,id,custo,qtdCarros+1,arquivo);
+
+    insereRegistro(&carrosSimulacao, id, custo, "entrou");
 }
 
 void cadastrarFuncionarios(NoFuncionario **filaFuncionarios, char *nome, int id, int idade, FILE *arquivo)
@@ -170,6 +195,54 @@ void imprimirPilha(NoCarro *topo)
     printf("-------- FIM PILHA --------\n\n");
 }
 
+void insereLista(ListaCarros **carrosIni, ListaCarros **carrosFim,int quantidadeCarros, int placa, int valor, FILE *arquivoSimulacao)
+{
+    ListaCarros *novoCarro = malloc(sizeof(ListaCarros));
+    ListaCarros *aux;
+
+    novoCarro->placa = placa;
+    novoCarro->valor = valor;
+    novoCarro->prox = NULL;
+    novoCarro->ant = *carrosFim;
+
+    if (*carrosIni == NULL)
+    {
+        *carrosIni = novoCarro;
+        *carrosFim  = novoCarro;
+    }else{
+        aux = *carrosIni;
+        while (aux->prox != NULL)
+        {
+            aux = aux->prox;
+        }
+        aux->prox = novoCarro;
+        *carrosFim = aux->prox;
+    }
+    fprintf(arquivoSimulacao, "Carro %d entrou. Total = %d\n", novoCarro->placa, quantidadeCarros);
+}
+
+void insereRegistro(RegistroCarros **carrosSimulacao, int resposta, int valor, char *atividade)
+{
+    RegistroCarros *novoCarro = malloc(sizeof(RegistroCarros));
+    RegistroCarros *auxiliar;
+
+    novoCarro->placa = resposta;
+    novoCarro->valor = valor;
+    strcpy(novoCarro->atividade, atividade);
+    novoCarro->prox = NULL;
+
+    if(*carrosSimulacao == NULL){
+        *carrosSimulacao = novoCarro;
+    }else{
+        auxiliar = *carrosSimulacao;
+        while (auxiliar->prox != NULL)
+        {
+            auxiliar = auxiliar->prox;
+        }
+        auxiliar->prox = novoCarro;
+    }
+}
+
 void ordenarFuncionariosIdade(NoFuncionario *filaFuncionarios) 
 {
     NoFuncionario *pi; // Início da fila.
@@ -179,7 +252,7 @@ void ordenarFuncionariosIdade(NoFuncionario *filaFuncionarios)
     for(pi=filaFuncionarios; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFuncionarios; pj->prox != pfim; pj = pj->prox){
             if (pj->idade > pj->prox->idade){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;
@@ -206,7 +279,7 @@ void ordenarFuncionariosID(NoFuncionario *filaFuncionarios)
     for(pi=filaFuncionarios; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFuncionarios; pj->prox != pfim; pj = pj->prox){
             if (pj->id > pj->prox->id){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;
@@ -233,7 +306,7 @@ void ordenarFuncionariosNome(NoFuncionario *filaFuncionarios)
     for(pi=filaFuncionarios; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFuncionarios; pj->prox != pfim; pj = pj->prox){
             if ( strcmp(pj->nome, pj->prox->nome) > 0 ){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;
@@ -261,6 +334,8 @@ void removerCarro()
 
     int estadia = checarValorEstadia(topo,resposta);
     fprintf(arquivo, "Carro %d devera sair (Estadia = %d)\n", resposta, estadia);
+
+    insereRegistro(&carrosSimulacao, resposta, estadia, "saira");
 
     lucroEstacionamento += estadia; // Adiciona ao lucro total o custo do carro.
     
@@ -315,6 +390,18 @@ void removerCarrosFechamento()
         cadastrarFuncionariosAUX(&filaFuncionarios,funcTrabalhando->nome, funcTrabalhando->id, funcTrabalhando->idade);
 
     }
+}
+
+int contarCarros(ListaCarros *carrosIni)
+{
+    int aux = 0;
+
+    while (carrosIni != NULL)
+    {
+        aux++;
+        carrosIni = carrosIni->prox;
+    }
+    
 }
 
 int gerarHora()
@@ -372,7 +459,7 @@ int verificarQuantidadeCarros(NoCarro *topo)
 
 int main(void)
 {
-    arquivo = fopen("log.txt", "a"); // Cria ou abre o arquivo de log.
+    arquivo = fopen("log1dia.txt", "a"); // Cria ou abre o arquivo de log.
 
     if(arquivo == NULL){ // Caso haja algum problema com o arquivo e ele não seja aberto, uma mensagem é exibida no console.
         printf("Ops! Erro ao tentar abrir o arquivo.");
@@ -455,11 +542,51 @@ int main(void)
     }
 
     fprintf(arquivo, "Valor do portão obtido! (Total arrecadado: %d). Nenhum carro pode entrar!\n", lucroEstacionamento);
+    printf("Valor do portao obtido! Nenhum carro pode entrar!\n");
 
     removerCarrosFechamento();
 
     fprintf(arquivo, "Estacionamento fechado!\n"); // Mensagem de fechamento do primeiro dia.
 
+    // **********SEGUNDO DIA**********
+
+    arquivoSimulacao = fopen("log2dia.txt", "a");
+
+
+    // CADASTRO DOS FUNCIONARIOS
+
+    NoFuncionario *novoFuncionario;
+
+    for(int i = 0; i < QUANTIDADE_FUNCIONARIOS; i++){
+        novoFuncionario = removerDaFila(&filaFuncionarios);
+        cadastrarFuncionarios(&filaFuncionarios, novoFuncionario->nome, novoFuncionario->id, novoFuncionario->idade, arquivoSimulacao);
+    }
+
+    imprimirFila(filaFuncionarios);
+
+    fprintf(arquivoSimulacao, "Ordenacao usada: ID;\n");
+    fprintf(arquivoSimulacao, "Abertura do estacionamento (lotacao maxima = %d).\n", TAMANHO_ESTACIONAMENTO);
+
+    if (carrosIni == NULL){
+        fprintf(arquivoSimulacao, "Estacionamento vazio!\n");
+    }
+
+    int quantidadeCarros; 
+    
+    while (carrosSimulacao)
+    {
+        if(strcmp(carrosSimulacao->atividade, "entrou") == 0){
+            quantidadeCarros = contarCarros(carrosIni);
+            insereLista(&carrosIni, &carrosFim, quantidadeCarros, carrosSimulacao->placa, carrosSimulacao->valor, arquivoSimulacao);
+        }else if(strcmp(carrosSimulacao->atividade, "deve sair") == 0){
+            int tamanhoIni;
+            int tamanhoFim;
+
+            
+
+        }
+    }
+    
     fclose(arquivo); //fechar arquivo
     
     return 0;
