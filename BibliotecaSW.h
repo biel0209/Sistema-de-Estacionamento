@@ -13,7 +13,7 @@ typedef struct noFuncionario{
 }NoFuncionario;
 
 typedef struct noCarro{
-    char placa;
+    char placa;   //TODO: placa deve ser inteiro
     int valor; // valor multiplicado pelo tempo. (12 reais/hora)
     struct noCarro *prox;
 }NoCarro;
@@ -96,127 +96,115 @@ void insereNaLista(ListaCarro **lista, ListaCarro **listaFim, char placa, int cu
     fprintf(arquivoDia2, "Carro %d entrou. Total = %d\n", novo->placa, totalCarros);
 }
 
-void insereNaLista2(ListaCarro **lista, char placa, int custo) //insere no fim
+void insereNaListaFim(ListaCarro **lista, ListaCarro **listaCarrosFim, char placa, int custo) //insere no fim
 {
     ListaCarro *novo = malloc(sizeof(ListaCarro));
-    ListaCarro *aux;
-
+    
     novo->placa = placa;
     novo->valor = custo;
     novo->prox = NULL;
-
-    if(*lista == NULL){
+    novo->ant = *listaCarrosFim;
+    if(*listaCarrosFim == NULL){
+        *listaCarrosFim = novo;
         *lista = novo;
+    }
+    else{
+        *listaCarrosFim = novo;
+    }
+}
+
+void insereNaListaCabeca(ListaCarro **lista, ListaCarro **listaCarrosFim, char placa, int custo) //insere no fim
+{
+    ListaCarro *novo = malloc(sizeof(ListaCarro));
+
+    novo->placa = placa;
+    novo->valor = custo;
+    novo->prox = *lista;
+    novo->ant = NULL;
+
+    if((*lista) == NULL){
+        *lista = novo;
+        *listaCarrosFim = novo;
     }else{
-        aux = *lista;
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        aux->prox = novo;
+        *lista = novo;
     }
+
+    
 }
 
-int checarTamInicio(ListaCarro *lista, int placa, int estadia) //verificar quantos carros tem entre o inicio da lista e o carro procurado
+int checarTamInicio(ListaCarro **lista, int placa) //verificar quantos carros tem entre o inicio da lista e o carro procurado
 {
+    ListaCarro *aux;
     int cont=0;
-    while(lista && lista->placa != placa && lista->valor != estadia){
+    aux = *lista;
+    while(aux && aux->placa != placa){
         cont++;
-        lista = lista->prox;
+        aux = aux->prox;
     }
     return cont;
 }
 
-int checarTamFim(ListaCarro *listaFim, int placa, int estadia) //verificar quantos carros tem entre o inicio da lista e o carro procurado
+int checarTamFim(ListaCarro **listaFim, int placa) //verificar quantos carros tem entre o inicio da lista e o carro procurado
 {
+    ListaCarro *aux;
     int cont=0;
-    while(listaFim && listaFim->placa != placa && listaFim->valor != estadia){
+    aux = *listaFim;
+    while(aux && aux->placa != placa){
         cont++;
-        listaFim = listaFim->ant;
+        aux = aux->ant;
     }
     return cont;
 }
 
-ListaCarro* removerDaLista(ListaCarro **lista)
+ListaCarro* removerDaLista(ListaCarro **lista, ListaCarro **listaCarrosFim)
 {   
     ListaCarro *remover = NULL;
     if(*lista){
-        remover = *lista;
-        *lista = remover->prox;
+        if ((*lista)->prox == (*listaCarrosFim)){
+            remover = *lista;
+            *lista = remover->prox;
+            (*listaCarrosFim)->ant = NULL;  
+        }
+        else{
+            if((*lista) == (*listaCarrosFim)){     //TODO: verificar esse else if, debugar pois ta bugando
+                remover = *lista;
+                *lista = remover->prox;
+                *listaCarrosFim = NULL;
+            }else{
+                remover = *lista;
+                *lista = remover->prox;
+            }
+            
+        }
+        
     }
     return remover;
 }
 
-void removerDaListaInicio(ListaCarro **lista, int placa, int estadia, NoCarro *rua, FILE *arquivoDia2)
+ListaCarro* removerDaListaFim(ListaCarro **lista, ListaCarro **listaCarrosFim)
 {   
     ListaCarro *remover = NULL;
-    ListaCarro *carroRemovido;
-    NoCarro *carroDaRua;
-    ListaCarro *aux;
-
-    if(*lista){
-        if( (*lista)->placa == placa && (*lista)->valor == estadia ){
-            remover = *lista;
-            *lista = remover->prox;
+    if(*listaCarrosFim){
+        if((*listaCarrosFim)->ant == (*lista)){
+            remover = *listaCarrosFim;
+            *listaCarrosFim = remover->ant;
+            (*lista)->prox = NULL;
         }else{
-            aux = *lista;
-            while(aux && aux->placa != placa && aux->valor != estadia){
-                carroRemovido = removerDaLista(&aux);
-                fprintf(arquivoDia2, "Carro %d retirado\n",carroRemovido->placa);
-                rua = empilharCarro2(rua,carroRemovido->placa,carroRemovido->valor);
-                aux = aux->prox;
-            }
-            if (aux){
-                remover = aux;
-                aux = remover->prox;
-            }
-            while(rua){
-                carroDaRua = desempilharCarro(&rua);
-                //int totalCarros = checarQtdCarrosLista(lista);
-                insereNaLista2(lista,carroDaRua->placa,carroDaRua->valor);
-                fprintf(arquivoDia2, "Carro %d voltou\n",carroDaRua->placa);
+            if((*listaCarrosFim) == (*lista)){
+                remover = *listaCarrosFim;
+                *listaCarrosFim = remover->ant;
+                *lista = NULL;
+            }else{
+                remover = *listaCarrosFim;
+                *listaCarrosFim = remover->ant;
             }
         }
-
+        
+        
     }
-
+    return remover;
 }
-/*
-void removerDaListaInicio(ListaCarro **lista, int placa, int estadia, NoCarro *rua, FILE *arquivoDia2)
-{   
-    ListaCarro *remover = NULL;
-    ListaCarro *carroRemovido;
-    NoCarro *carroDaRua;
-    ListaCarro *aux;
 
-    if(*lista){
-        if( (*lista)->placa == placa && (*lista)->valor == estadia ){
-            remover = *lista;
-            *lista = remover->prox;
-        }else{
-            aux = *lista;
-            while(aux->prox && aux->placa != placa && aux->valor != estadia){
-                carroRemovido = removerDaLista(&aux);
-                fprintf(arquivoDia2, "Carro %d retirado\n",carroRemovido->placa);
-                rua = empilharCarro2(rua,carroRemovido->placa,carroRemovido->valor);
-                aux = aux->prox;
-            }
-            if (aux->prox){
-                remover = aux->prox;
-                aux->prox = remover->prox;
-            }
-            if (rua == NULL)
-                printf("\nrua vazia\n");
-            while(rua){
-                carroDaRua = desempilharCarro(&rua);
-                int totalCarros = checarQtdCarrosLista(lista);
-                insereNaLista2(&lista,carroDaRua->placa,carroDaRua->valor);
-                fprintf(arquivoDia2, "Carro %d voltou",carroDaRua->placa);
-            }
-        }
-
-    }
-
-}*/
 
 void imprimirListaReg(RegCarro *lista)
 {
@@ -236,7 +224,7 @@ void imprimirLista(ListaCarro *lista)
     }
 }
 
-void imprimirLista2(ListaCarro *lista)
+void imprimirListaFim(ListaCarro *lista)
 {
     printf("\n-------------------------LISTA DE CARROS INVERSA -------------------------\n");
     while(lista){
@@ -287,7 +275,7 @@ void ordenarFuncionariosNome(NoFuncionario *filaFunc)       //metodo bubblesort
     for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
             if ( strcmp(pj->nome, pj->prox->nome) > 0 ){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;
@@ -314,7 +302,7 @@ void ordenarFuncionariosIdade(NoFuncionario *filaFunc)    //metodo bubblesort
     for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
             if (pj->idade > pj->prox->idade){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;
@@ -341,7 +329,7 @@ void ordenarFuncionariosID(NoFuncionario *filaFunc)     //metodo bubblesort
     for(pi=filaFunc; pi->prox != NULL; pi = pi->prox){
         for(pj=filaFunc; pj->prox != pfim; pj = pj->prox){
             if (pj->id > pj->prox->id){
-                int auxNome[50];
+                char auxNome[50];
                 strcpy(auxNome, pj->nome);
                 int auxId = pj->id;
                 int auxIdade = pj->idade;

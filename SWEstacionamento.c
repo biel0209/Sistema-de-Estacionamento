@@ -73,24 +73,72 @@ void adicionarCarro()
     insereNaListaReg(&regCarros, id, custo, "entrou");
 }
 
-void removerLista(int placa, int estadia)
+void removerListaInicio(int placa, int estadia)
 {
-    int tamInicio = checarTamInicio(listaCarros, placa,estadia);
-    int tamFim = checarTamFim(listaCarrosFim,placa,estadia);
-   
-    fprintf(arquivoDia2, "Carro %d devera sair\n",placa);
+    fprintf(arquivoDia2, "Carro %d devera sair (Estadia = %d)\n",placa,estadia);
+    
+    ListaCarro *tempCarro;
+    NoCarro *tempCarroRua;
+    NoFuncionario* func_trabalhando;
 
-    removerDaListaInicio(&listaCarros,placa, estadia,rua,arquivoDia2);
-    /*
-    if (tamInicio <= tamFim){
-        removerDaListaInicio(&listaCarros,placa, estadia,rua,arquivoDia2);
-    }else{
-        removerDaListaFim(listaCarrosFim,placa, estadia);
-    } */
-
+    int cont=0;
+    for (int i = 0; i < tamEstacionamento; i++) {
+        func_trabalhando = removerDaFila(&filaFunc); // funcionario que desempilha o carro.
+        tempCarro = removerDaLista(&listaCarros,&listaCarrosFim);
+        fprintf(arquivoDia2, "-----Carro %d retirado pelo funcionario %s!\n", tempCarro->placa,func_trabalhando->nome);
+        if (tempCarro->placa != placa) {  //enquanto nao for o carro que deve ser retirado, empilhe na rua
+            rua = empilharCarroRua(rua, tempCarro->placa, tempCarro->valor);
+            cont++;
+        }else{
+            cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+            break;
+        }
+        cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+    }
+    //procedimento para retornar todos os carros da rua de volta para o estacionamento
+    for (int i = 0; i < cont; i++) {
+        func_trabalhando = removerDaFila(&filaFunc); // funcionario que desempilha o carro.
+        tempCarroRua = desempilharCarro(&rua);
+        insereNaListaCabeca(&listaCarros,&listaCarrosFim, tempCarroRua->placa, tempCarroRua->valor);
+        fprintf(arquivoDia2, "-----Carro %d voltou pelo funcionario %s!\n", tempCarroRua->placa,func_trabalhando->nome);
+        cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+    }
     fprintf(arquivoDia2, "Carro %d saiu. Total = %d\n",placa,checarQtdCarrosLista(listaCarros));
 }
 
+void removerListaFim(int placa, int estadia)
+{
+    fprintf(arquivoDia2, "Carro %d devera sair (Estadia = %d)\n",placa,estadia);
+    
+    ListaCarro *tempCarro;
+    NoCarro *tempCarroRua;
+    NoFuncionario* func_trabalhando;
+
+
+    int cont=0;
+    for (int i = 0; i < tamEstacionamento; i++) {
+        func_trabalhando = removerDaFila(&filaFunc); // funcionario que desempilha o carro.
+        tempCarro = removerDaListaFim(&listaCarros,&listaCarrosFim);
+        fprintf(arquivoDia2, "-----Carro %d retirado pelo funcionario %s!\n", tempCarro->placa,func_trabalhando->nome);
+        if (tempCarro->placa != placa) {  //enquanto nao for o carro que deve ser retirado, empilhe na rua
+            rua = empilharCarroRua(rua, tempCarro->placa, tempCarro->valor);
+            cont++;
+        }else{
+            cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+            break;
+        }
+        cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+    }
+    //procedimento para retornar todos os carros da rua de volta para o estacionamento
+    for (int i = 0; i < cont; i++) {
+        func_trabalhando = removerDaFila(&filaFunc); // funcionario que desempilha o carro.
+        tempCarroRua = desempilharCarro(&rua);
+        insereNaListaFim(&listaCarros,&listaCarrosFim, tempCarroRua->placa, tempCarroRua->valor);
+        fprintf(arquivoDia2, "-----Carro %d voltou pelo funcionario %s!\n", tempCarroRua->placa,func_trabalhando->nome);
+        cadastrarFuncionarios2(&filaFunc,func_trabalhando->nome, func_trabalhando->id, func_trabalhando->idade);
+    }
+    fprintf(arquivoDia2, "Carro %d saiu. Total = %d\n",placa,checarQtdCarrosLista(listaCarros));
+}
 
 int main()
 {
@@ -183,7 +231,11 @@ int main()
 
     //######################################  SEGUNDO DIA   #########################################
     
+    
     arquivoDia2 = fopen("log2.txt","a");
+
+    fprintf(arquivoDia2, "Abertura do segundo portao!\n"); 
+
 
     //Procedimento pra receber do usuario informacoes sobre o funcionario e cadastra-los
     NoFuncionario *funcRemovido;
@@ -191,32 +243,40 @@ int main()
         funcRemovido = removerDaFila(&filaFunc);
         cadastrarFuncionarios(&filaFunc, funcRemovido->nome,funcRemovido->id,funcRemovido->idade,arquivoDia2);
     }
-    //Fim do cadastramento
+    //Fim do cadastramento 
 
     imprimirFila(filaFunc);
+
 
     fprintf(arquivoDia2, "Ordenacao usada: ID;\n");   //TODO: QUAL ORDENACAO ESTA SENDO USADA?
     fprintf(arquivoDia2, "Abertura do estacionamento (lotacao maxima = %d).\n", tamEstacionamento);
     if (topo == NULL)
         fprintf(arquivoDia2, "Estacionamento vazio!\n");
 
-    
+    int tamInicio; 
+    int tamFim;
     while (regCarros){
         if ( strcmp(regCarros->acao, "entrou") == 0 ){
             insereNaLista(&listaCarros, &listaCarrosFim, regCarros->placa, regCarros->valor, checarQtdCarrosLista(listaCarros)+1, arquivoDia2);
         }else if ( strcmp(regCarros->acao, "devera sair") == 0 ){
-            removerLista(regCarros->placa, regCarros->valor);
+            //procedimento para achar o menor caminho, retirando pelo portao 1 (inicio) ou portao 2 (final)
+            tamInicio = 0;
+            tamFim = 0;
+            tamInicio = checarTamInicio(&listaCarros, regCarros->placa);
+            tamFim = checarTamFim(&listaCarrosFim,regCarros->placa);
+            if (tamInicio <= tamFim){
+                removerListaInicio(regCarros->placa, regCarros->valor);
+            }else{
+                removerListaFim(regCarros->placa, regCarros->valor);
+            } 
         }
         regCarros = regCarros->prox;
     }
 
-    imprimirLista(listaCarros);
-  
-    //imprimirLista2(listaCarrosFim); //testar a iteracao atraves do anterior, começando pelo final da lista
-    
-
+    fprintf(arquivoDia2, "Fechamento do estacionamento!\n"); 
 
     fclose(arquivo); //fechar arquivo
+    fclose(arquivoDia2); //fechar arquivo
 
     /*leitura do conteudo de log.txt e impressao no output
     int c;
@@ -226,7 +286,8 @@ int main()
         putchar(c);
     fclose(arquivoLeitura);
     */
-
+   
+   
     return 0;
 }
 
