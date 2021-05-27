@@ -12,7 +12,7 @@ typedef struct noFuncionario{ // Tipo responsável por definir um funcionário d
     struct noFuncionario *prox;
 }NoFuncionario;
 
-typedef struct noCarro{ // Tipo responsável por definir um funcionário do estacionamento.
+typedef struct noCarro{ // Tipo responsável por definir um carro do estacionamento.
     int placa;
     int valor; // Valor final resultante do produto entre tempo de estadia e custo.
     struct noCarro *prox;
@@ -52,6 +52,8 @@ void cadastrarFuncionarios(NoFuncionario **filaFuncionarios, char *nome, int id,
 void cadastrarFuncionariosAUX(NoFuncionario **filaFuncionarios,char *nome, int id, int idade);
 void imprimirFila(NoFuncionario *filaFuncionarios);
 void imprimirPilha(NoCarro *topo);
+void insereListaFim(ListaCarros **carrosIni, ListaCarros **carrosFim, int placa, int valor);
+void insereListaIni(ListaCarros **carrosIni, ListaCarros **carrosFim, int placa, int valor);
 void insereLista(ListaCarros **carrosIni, ListaCarros **carrosFim,int quantidadeCarros, int placa, int valor, FILE *arquivoSimulacao);
 void insereRegistro(RegistroCarros **carrosSimulacao, int resposta, int valor, char *atividade);
 void ordenarFuncionariosIdade(NoFuncionario *filaFuncionarios);
@@ -59,10 +61,15 @@ void ordenarFuncionariosID(NoFuncionario *filaFuncionarios);
 void ordenarFuncionariosNome(NoFuncionario *filaFuncionarios);
 void verificarValorEstadia(NoCarro *topo, int placa);
 void removerCarro();
+void removerListaFim(int placa, int valor);
+void removerListaIni(int placa, int valor);
 void removerCarrosFechamento();
 int contarCarros(ListaCarros *carros);
 int gerarHora();
 int gerarValores();
+int verificarTamanhoFim(ListaCarros **carrosFim, int placa);
+int verificarTamanhoIni(ListaCarros **carrosIni, int placa);
+int verificarQuantidadeCarrosLista(ListaCarros *carrosIni);
 int verificarQuantidadeCarros(NoCarro *topo);
 
 NoCarro* desempilharCarro(NoCarro **topo)
@@ -190,7 +197,7 @@ void imprimirPilha(NoCarro *topo)
     printf("\n-------- PILHA CARROS --------\n");     
     while(topo){   //enquanto topo for true, ou seja, enquanto nao for false/null
         printf("Carro %d\t Custo da estadia: %d\n",topo->placa, topo->valor);
-        topo = topo->prox; //interação
+        topo = topo->prox; //iteração
     }
     printf("-------- FIM PILHA --------\n\n");
 }
@@ -371,6 +378,78 @@ void removerCarro()
     fprintf(arquivo, "Carro %d saiu! Total = %d\n", resposta, verificarQuantidadeCarros(topo));
 }
 
+void removerListaFim(int placa, int valor)
+{
+    fprintf(arquivoSimulacao, "Carro %d devera sair (Estadia = %d)\n",placa,valor);
+
+    ListaCarros *carroTemp;
+    NoCarro *carroRuaTemp;
+    NoFuncionario *funcionarioTrabalhando;
+
+
+    int cont;
+
+    for(int i = 0; i < TAMANHO_ESTACIONAMENTO; i++){
+        funcionarioTrabalhando = removerDaFila(&filaFuncionarios);
+        carroTemp = removerDaListaFim(&carrosIni, &carrosFim);
+        fprintf(arquivoSimulacao, "-----Carro %d retirado pelo funcionario %s!\n", carroTemp->placa,funcionarioTrabalhando->nome);
+
+        if(carroTemp->placa != placa){
+            rua = empilharCarroRua(rua, carroTemp->placa, carroTemp->valor);
+            cont++;
+        }else{
+            cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+            break;
+        }
+        cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+    }
+
+    for(int i = 0; i < cont; i++){
+        funcionarioTrabalhando = removerDaFila(&filaFuncionarios);
+        carroRuaTemp = desempilharCarro(&rua);
+        insereListaFim(&carrosIni, &carrosFim, carroRuaTemp->placa, carroRuaTemp->valor);
+        fprintf(arquivoSimulacao, "-----Carro %d voltou pelo funcionario %s!\n", carroRuaTemp->placa,funcionarioTrabalhando->nome);
+        cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+    }
+    fprintf(arquivoSimulacao, "Carro %d saiu. Total = %d\n", placa, verificarQuantidadeCarrosLista(carrosIni));
+}
+
+void removerListaIni(int placa, int valor)
+{
+    fprintf(arquivoSimulacao, "Carro %d devera sair (Estadia = %d)\n",placa,valor);
+
+    ListaCarros *carroTemp;
+    NoCarro *carroRuaTemp;
+    NoFuncionario *funcionarioTrabalhando;
+
+
+    int cont;
+
+    for(int i = 0; i < TAMANHO_ESTACIONAMENTO; i++){
+        funcionarioTrabalhando = removerDaFila(&filaFuncionarios);
+        carroTemp = removerDaLista(&carrosIni, &carrosFim);
+        fprintf(arquivoSimulacao, "-----Carro %d retirado pelo funcionario %s!\n", carroTemp->placa,funcionarioTrabalhando->nome);
+
+        if(carroTemp->placa != placa){
+            rua = empilharCarroRua(rua, carroTemp->placa, carroTemp->valor);
+            cont++;
+        }else{
+            cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+            break;
+        }
+        cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+    }
+
+    for(int i = 0; i < cont; i++){
+        funcionarioTrabalhando = removerDaFila(&filaFuncionarios);
+        carroRuaTemp = desempilharCarro(&rua);
+        insereListaIni(&carrosIni, &carrosFim, carroRuaTemp->placa, carroRuaTemp->valor);
+        fprintf(arquivoSimulacao, "-----Carro %d voltou pelo funcionario %s!\n", carroRuaTemp->placa,funcionarioTrabalhando->nome);
+        cadastrarFuncionariosAUX(&filaFuncionarios, funcionarioTrabalhando->nome, funcionarioTrabalhando->id, funcionarioTrabalhando->idade);
+    }
+    fprintf(arquivoSimulacao, "Carro %d saiu. Total = %d\n", placa, verificarQuantidadeCarrosLista(carrosIni));
+}
+
 void removerCarrosFechamento()
 {
     NoFuncionario* funcTrabalhando; // Funcionario responsavel pela retirada do carro.
@@ -419,7 +498,7 @@ int gerarValores()
     int hora = gerarHora();
     int custo;
     
-    if(hora <= 60) custo = 12; 
+    if(hora <= 60) custo = 12;
     else if(hora > 60 && hora <= 120) custo = 12 * 2;
     else if(hora > 120 && hora <= 180) custo = 12 * 3;
     else if(hora > 180 && hora <= 240) custo = 12 * 4;
@@ -433,6 +512,46 @@ int gerarValores()
     else if(hora > 660 && hora <= 720) custo = 12 * 12;
   
     return custo;
+}
+
+int verificarTamanhoFim(ListaCarros **carrosFim, int placa)
+{
+    ListaCarros *aux;
+    int cont;
+
+    aux = *carrosFim;
+
+    while (aux && aux->placa != placa)
+    {
+        cont++;
+        aux = aux->ant;
+    }
+    return cont;
+}
+
+int verificarTamanhoIni(ListaCarros **carrosIni, int placa)
+{
+    ListaCarros *aux;
+    int cont;
+
+    aux = *carrosIni;
+
+    while (aux && aux->placa != placa)
+    {
+        cont++;
+        aux = aux->prox;
+    }
+    return cont;
+}
+
+int verificarQuantidadeCarrosLista(ListaCarros *carrosIni)
+{
+    int cont=0;
+    while(carrosIni){
+        cont++;
+        carrosIni = carrosIni->prox;
+    }
+    return cont;
 }
 
 int checarValorEstadia(NoCarro *topo, int placa)
@@ -582,7 +701,14 @@ int main(void)
             int tamanhoIni;
             int tamanhoFim;
 
-            
+            tamanhoFim = verificarTamanhoFim(&carrosSimulacao, carrosSimulacao->placa);
+            tamanhoIni = verificarTamanhoIni(&carrosSimulacao, carrosSimulacao->placa);
+
+            if(tamanhoIni <= tamanhoFim){
+                removerListaIni(carrosSimulacao->placa, carrosSimulacao->valor);
+            }else{
+                removerListaFim(carrosSimulacao->placa, carrosSimulacao->valor);
+            }
 
         }
     }
