@@ -16,6 +16,7 @@ ListaCarro *listaCarros = NULL; //estrutura dos carros do segundo dia (referenci
 ListaCarro *listaCarrosFim = NULL; //estrutura dos carros do segundo dia (referencia do final da lista)
 NoFuncionario *filaFunc = NULL; //estrutura dos funcionarios (fila)
 
+//TODO: adiciona os free
 
 void removerCarro()
 {

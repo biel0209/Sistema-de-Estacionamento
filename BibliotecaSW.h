@@ -183,7 +183,7 @@ ListaCarro* removerDaLista(ListaCarro **lista, ListaCarro **listaCarrosFim)
 
 ListaCarro* removerDaListaFim(ListaCarro **lista, ListaCarro **listaCarrosFim)
 {   
-    ListaCarro *remover = NULL;
+    ListaCarro *remover = NULL;  
     if(*listaCarrosFim){
         if((*listaCarrosFim)->ant == (*lista)){
             remover = *listaCarrosFim;
