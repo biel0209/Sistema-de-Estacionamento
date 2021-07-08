@@ -536,8 +536,6 @@ int main()
 
     //imprimirAvl(&avl);
 
-
-
     //imprimirLista(carrosSimulacao);
     return 0;
 }
