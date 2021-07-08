@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define TAM_ESTAC 6
+#define TAM_ESTAC 5
 #define QTD_TESTES 3
 #define M 11     // tamanho da tabela hash = (2*TAM_ESTAC) e numero primo mais proximo
 
@@ -15,6 +15,7 @@ typedef struct arv{
 
 typedef struct avl{
     int placa;
+    int id;
     int altura; //distancia de um nó x até seu filho mais afastado
     struct avl *dir;
     struct avl *esq;  
@@ -36,26 +37,27 @@ typedef struct listaHash{ // lista para tabela hash
     noHash *inicio;
 }ListaHash;
 
-
-
-
-
 RegistroCarros *carrosSimulacao = NULL; //instancia da simulação
 int idxREV;
 int qtdCarros = 0; //qtd de carros na arvore
 
 int numArvIN = 0;  //numero de pesquisas de entrada na arvore de busca binaria
 int numArvOU = 0;  //numero de pesquisas de saida na arvore de busca binaria
-float mediaArvIN = 0;  //numero medio de pesquisas de entrada na arvore de busca binaria
+float mediaArvIN = 0;  //numero medio de pesquisas de entrada  na arvore de busca binaria
 float mediaArvOU = 0;  //numero medio de pesquisas de saida na arvore de busca binaria
+
 
 int numHashIN = 0;  //numero de pesquisas de entrada na tabela hash
 int numHashOU = 0;  //numero de pesquisas de saida na tabela hash
 float mediaHashIN = 0;  //numero medio de pesquisas de entrada na tabela hash
 float mediaHashOU = 0;  //numero medio de pesquisas de saida na tabela hash
 
-int checarDuplicados = 0;
+int numAvlIN = 0;  //numero de pesquisas de entrada na arvore AVL
+int numAvlOU = 0;  //numero de pesquisas de saida na arvore AVL
+float mediaAvlIN = 0;  //numero medio de pesquisas de entrada na arvore AVL
+float mediaAvlOU = 0;  //numero medio de pesquisas de saida na arvore AVL
 
+int checarDuplicados = 0;
 
 int maior(int x, int y);
 int fatorB(AvlTree *avl);  //calcular fator de balanceamento da arvore avl;
@@ -63,14 +65,19 @@ void rotacaoDE(AvlTree **avl);  //rotacao dupla a direita
 void rotacaoED(AvlTree **avl);  //rotacao dupla a esquerda
 void rotacaoSD(AvlTree **avl); //rotacao simples a direita
 void rotacaoSE(AvlTree **avl);  //rotacao simples a esquerda
-int inserirAvl(AvlTree **avl, int placa);
+int inserirAvl(AvlTree **avl, int placa, int id);
 int alturaNo(AvlTree *avl);
 void inserirTabela(ListaHash hash[], int placa, int id);
 void inserirLista(ListaHash *lista, int placa, int id);
 void inicializarLista(ListaHash *lista);
 void inicializarTabela(ListaHash hash[]);
+AvlTree* procuraMenor(AvlTree* no);
+void rotacaoSE(AvlTree **avl);
+void rotacaoSD(AvlTree **avl);
+void rotacaoED(AvlTree **avl);
+void rotacaoDE(AvlTree **avl);
+int fatorB(AvlTree *avl);
 int espalhamento(int chave);
-
 
 void insereRegistro(RegistroCarros **carrosSimulacao, int placa, char *atividade)
 {
@@ -201,7 +208,7 @@ void verificarPortao(int placa)
 
 int carroPraRemover(Tree *arv, int cont, int random)
 {   
-    while (arv != NULL && cont < random) {
+    while (arv != NULL && cont < random){
         if ((arv)->esq) 
             (arv) = (arv)->esq;
         else if((arv)->dir)
@@ -239,7 +246,7 @@ void imprimirERD(Tree **arv)
     }
 }
 
-int inserirAvl(AvlTree **avl, int placa)
+int inserirAvl(AvlTree **avl, int placa, int id)
 {
     int res; 
 
@@ -249,6 +256,7 @@ int inserirAvl(AvlTree **avl, int placa)
         if (aux == NULL) return 0;  //se aux falhar em alocar memoria a funcao retorna 0
         aux->placa = placa;
         aux->altura = 0;
+        aux->id = id;
         aux->esq = NULL;
         aux->dir = NULL;
         *avl = aux;
@@ -257,8 +265,10 @@ int inserirAvl(AvlTree **avl, int placa)
 
     AvlTree *atual = *avl;
     if (placa < atual->placa){ //se a placa for menor que a placa de atual, insere pela esquerda
-        if((res = inserirAvl(&(atual->esq), placa)) == 1){ //se o retorno for true, sucesso na insercao
+        numAvlIN++;
+        if((res = inserirAvl(&(atual->esq), placa, id)) == 1){ //se o retorno for true, sucesso na insercao
             if(fatorB(atual) >= 2){  //se o fator em modulo for maior igual 2 precisa balancear
+                numAvlIN++;
                 if(placa < (*avl)->esq->placa) 
                     rotacaoSE(avl);
                 else 
@@ -267,8 +277,10 @@ int inserirAvl(AvlTree **avl, int placa)
         }
     }else{   //se a placa for maiorr que a placa de atual, insere pela direita
         if(placa > atual->placa){
-            if((res = inserirAvl(&(atual->dir), placa)) == 1){ //se o retorno for true, sucesso na insercao
+            numAvlIN += 2;
+            if((res = inserirAvl(&(atual->dir), placa, id)) == 1){ //se o retorno for true, sucesso na insercao
                 if(fatorB(atual) >= 2){  //se o fator em modulo for maior igual 2 precisa balancear
+                    numAvlIN++;
                     if(placa > (*avl)->dir->placa) 
                         rotacaoSD(avl);
                     else 
@@ -283,6 +295,82 @@ int inserirAvl(AvlTree **avl, int placa)
     atual->altura= maior(alturaNo(atual->esq), alturaNo(atual->dir)) + 1;
 
     return res;
+}
+
+int removerAVL(AvlTree **avl, int placa)
+{
+    if(*avl == NULL){
+        printf("valor nao existe!\n");
+        return 0;
+    }
+
+    int x;
+
+    if(placa < (*avl)->placa){
+        numAvlOU++;
+        if((x = removerAVL(&(*avl)->esq, placa)) == 1){
+            if(fatorB(*avl) >= 2){
+                if(alturaNo((*avl)->dir->esq) <= alturaNo((*avl)->dir->dir)){
+                    rotacaoSD(avl);
+                }else{
+                    rotacaoDE(avl);
+                }
+            }
+        }
+    }
+
+    if(placa > (*avl)->placa){
+        numAvlOU += 2;
+        if((x = removerAVL(&(*avl)->dir, placa)) == 1){
+            if(fatorB(*avl) >= 2){
+                if(alturaNo((*avl)->esq->dir) <= alturaNo((*avl)->esq->esq)){
+                    rotacaoSE(avl);
+                }else{
+                    rotacaoED(avl);
+                }
+            }
+        }
+    }
+
+    if((*avl)->placa == placa){
+	    numAvlOU += 3;
+        if(((*avl)->esq == NULL || (*avl)->dir == NULL)){
+			AvlTree *remover = (*avl);
+			if((*avl)->esq != NULL)
+                *avl = (*avl)->esq;
+            else
+                *avl = (*avl)->dir;
+            idxREV = remover->id;
+			free(remover);
+		}else {
+			AvlTree* aux = procuraMenor((*avl)->dir);
+			(*avl)->placa = aux->placa;
+			removerAVL(&(*avl)->dir, (*avl)->placa);
+            if(fatorB(*avl) >= 2){
+				if(alturaNo((*avl)->esq->dir) <= alturaNo((*avl)->esq->esq))
+					rotacaoSE(avl);
+				else
+					rotacaoED(avl);
+			}
+		}
+		if (*avl != NULL)
+            (*avl)->altura = maior(alturaNo((*avl)->esq),alturaNo((*avl)->dir)) + 1;
+		return 1;
+	}
+
+	(*avl)->altura = maior(alturaNo((*avl)->esq),alturaNo((*avl)->dir)) + 1;
+
+	return x;
+}
+
+AvlTree* procuraMenor(AvlTree* no){
+    AvlTree *no1 = no;
+    AvlTree *no2 = no->esq;
+    while(no2 != NULL){
+        no1 = no2;
+        no2 = no2->esq;
+    }
+    return no1;
 }
 
 void rotacaoSE(AvlTree **avl)  //rotacao simples a esquerda
@@ -341,6 +429,17 @@ void imprimirAvl(AvlTree **avl)
         imprimirAvl(&((*avl)->esq));
         printf("Placa: %d Altura: %d\n",(*avl)->placa, (*avl)->altura);
         imprimirAvl(&((*avl)->dir));
+    }
+}
+
+void alterarIndiceAVL(AvlTree **avl)
+{
+   if (*avl != NULL){
+        alterarIndiceAVL(&((*avl)->esq));
+        if((*avl)->id > idxREV){
+            (*avl)->id = ((*avl)->id) - 1;
+        }
+        alterarIndiceAVL(&((*avl)->dir));
     }
 }
 
@@ -447,7 +546,9 @@ int main()
     Tree *arv = NULL;
     AvlTree *avl = NULL;
     ListaHash hash[M];
-    inicializarTabela(hash);
+    
+    float mediaInTestes = 0;   
+    float mediaOuTestes = 0;
 
     // INSERCAO NA ARVORE DE BUSCA BINARIA
     printf("||||||||||||||||||||||||||||||||||||||\tARVORE DE BUSCA BINARIA\t||||||||||||||||||||||||||||||||||||||:\n");
@@ -463,6 +564,7 @@ int main()
             qtdCarros++;
             insereRegistro(&carrosSimulacao, placa, "entrou");
         } 
+        mediaArvIN = numArvIN/TAM_ESTAC;    //media de pesquisas pra uma inserção
 
         printf("\n----------Impressao %d da Arvore de busca Binaria----------\n",j+1);
         imprimirERD(&arv);
@@ -478,19 +580,24 @@ int main()
             insereRegistro(&carrosSimulacao, placa, "saiu");
             imprimirERD(&arv);
         }
-        numArvIN += numArvIN;
-        numArvOU += numArvOU;
+        mediaArvOU = numArvOU/TAM_ESTAC;    //media de pesquisas pra uma remoção
+
+
+        mediaInTestes += mediaArvIN;    //acumular as medias de entrada de cada teste
+        mediaOuTestes += mediaArvOU;    //acumular as medias de saida de cada teste
     }
-    mediaArvIN = numArvIN/QTD_TESTES;
-    mediaArvOU = numArvOU/QTD_TESTES;
+    printf("\nNumero medio de pesquisas de entrada da arvore de busca binaria: %.2f\n",mediaInTestes/QTD_TESTES);
+    printf("\nNumero medio de pesquisas de saida da arvore de busca binaria: %.2f\n",mediaOuTestes/QTD_TESTES);
 
-    printf("\nNumero medio de pesquisas de entrada da arvore de busca binaria: %.2f\n",mediaArvIN);
-    printf("\nNumero medio de pesquisas de saida da arvore de busca binaria: %.2f\n",mediaArvOU);
     
+    //imprimirLista(carrosSimulacao);
 
-    imprimirLista(carrosSimulacao);
+
 
     //INSERCAO NA TABELA HASH
+    mediaInTestes = 0;   
+    mediaOuTestes = 0;
+    inicializarTabela(hash);
     printf("||||||||||||||||||||||||||||||||||||||\tTABELA HASH\t||||||||||||||||||||||||||||||||||||||:\n");
     for(int j=0; j<QTD_TESTES; j++){
         qtdCarros=0;
@@ -502,6 +609,7 @@ int main()
             qtdCarros++;
             registro = registro->prox;
         }
+        mediaHashIN = numHashIN/TAM_ESTAC;
         printf("\n------------Impressao %d da tabela hash------------\n",j+1);
         imprimirHash(hash);
 
@@ -514,28 +622,55 @@ int main()
             imprimirHash(hash);
             registro = registro->prox;
         }
-        numHashIN += numHashIN;
-        numHashOU += numHashOU;
+        mediaHashOU = numHashOU/TAM_ESTAC;
+
+        mediaInTestes += mediaHashIN;
+        mediaOuTestes += mediaHashOU;
     }   
-    mediaHashIN = numHashIN/QTD_TESTES;
-    mediaHashOU = numHashOU/QTD_TESTES;
-    printf("\nNumero medio de pesquisas de entrada da tabela hash: %.2f\n",mediaHashIN);
-    printf("\nNumero medio de pesquisas de saida da tabela hash: %.2f\n",mediaHashOU);
+    printf("\nNumero medio de pesquisas de entrada da tabela hash: %.2f\n",mediaInTestes/QTD_TESTES);
+    printf("\nNumero medio de pesquisas de saida da tabela hash: %.2f\n",mediaOuTestes/QTD_TESTES);
 
 
+    //INSERCAO NA ARVORE AVL
+    
+    mediaInTestes = 0;   
+    mediaOuTestes = 0;
+    for(int j=0; j<QTD_TESTES; j++){
+        qtdCarros=0;
+        RegistroCarros *registro2;
+        registro2 = carrosSimulacao;
+        for (int i=0; i<TAM_ESTAC; i++){
+            placa = registro2->placa;
+            int x = inserirAvl(&avl, placa, i+1);
+            qtdCarros++;
+            registro2 = registro2->prox;
+            if (x==0) printf("%d nao inserido!\n",placa);
+        }
+        mediaAvlIN = numAvlIN/TAM_ESTAC;
 
+        imprimirAvl(&avl);
+        printf("------------------\n",placa);
 
+        for (int i=0; i<TAM_ESTAC; i++){
+            placa = registro2->placa;
+            int x = removerAVL(&avl, placa);
+            verificarPortao(placa);
+            qtdCarros--;
+            alterarIndiceAVL(&avl);
+            printf("A placa %d saiu.\n", placa);
+            registro2 = registro2->prox;
 
-    /* INSERCAO NA ARVORE AVL
-   for (int i=0; i<TAM_ESTAC; i++){
-        scanf("%d",&placa);
-        int x = inserirAvl(&avl, placa);
-        if (x==0) printf("%d nao inserido!\n",placa);
-        insereRegistro(&carrosSimulacao, placa, "entrou");
-    } */
+            imprimirAvl(&avl);
+        }
+        mediaAvlOU = numAvlOU/TAM_ESTAC;
 
-    //imprimirAvl(&avl);
+        mediaInTestes += mediaAvlIN;
+        mediaOuTestes += mediaAvlOU;
+    }
 
+    printf("\nNumero medio de pesquisas de entrada da arvore AVL: %.2f\n",mediaInTestes/QTD_TESTES);
+    printf("\nNumero medio de pesquisas de saida da arvore AVL: %.2f\n",mediaOuTestes/QTD_TESTES);
+    
     //imprimirLista(carrosSimulacao);
     return 0;
 }
